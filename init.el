@@ -93,25 +93,26 @@
   (when (member "DejaVu Sans Mono" (font-family-list))
     (set-frame-font "DejaVu Sans Mono" t t))))
 
-;; 汉语设置
-(set-fontset-font
- t
- 'han
- (cond
-  ((string-equal system-type "windows-nt")
-   (cond
-    ((member "微软雅黑" (font-family-list)) "微软雅黑")
-    ((member "微软正黑体" (font-family-list)) "微软正黑体")))
-  ((string-equal system-type "darwin")
-   (cond
-    ((member "Hei" (font-family-list)) "Hei")
-    ((member "Heiti SC" (font-family-list)) "Heiti SC")
-    ((member "Heiti TC" (font-family-list)) "Heiti TC")))
-  ((string-equal system-type "gnu/linux")
-   (cond
-    ((member "WenQuanYi Micro Hei" (font-family-list)) "WenQuanYi Micro Hei")))))
+;; ;; 汉语设置
+;; (set-fontset-font
+;;  t
+;;  'han
+;;  (cond
+;;   ((string-equal system-type "windows-nt")
+;;    (cond
+;;     ((member "微软雅黑" (font-family-list)) "微软雅黑")
+;;     ((member "微软正黑体" (font-family-list)) "微软正黑体")))
+;;   ((string-equal system-type "darwin")
+;;    (cond
+;;     ((member "Hei" (font-family-list)) "Hei")
+;;     ((member "Heiti SC" (font-family-list)) "Heiti SC")
+;;     ((member "Heiti TC" (font-family-list)) "Heiti TC")))
+;;   ((string-equal system-type "gnu/linux")
+;;    (cond
+;;     ((member "WenQuanYi Micro Hei" (font-family-list)) "WenQuanYi Micro Hei")))))
 
-(set-face-attribute 'default nil :height 160)
+(set-face-attribute 'default nil 
+                    :height 160)
 
 (use-package emojify)
 
@@ -509,11 +510,13 @@
 
 (use-package lsp-ivy)
 
-(use-package typescript-mode
-  :mode "\\.ts\\'"
-  :hook (typescript-mode . lsp-deferred)
-  :config
-  (setq typescript-indent-level 2))
+(add-to-list 'exec-path "/root/.nvm/versions/node/v17.3.1/bin")
+
+   (use-package typescript-mode
+     :mode "\\.ts\\'"
+     :hook (typescript-mode . lsp-deferred)
+     :config
+     (setq typescript-indent-level 2))
 
 (use-package company
   :after lsp-mode
