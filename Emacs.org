@@ -64,15 +64,17 @@ I sometimes use Emacs on WSL which is a subsystem of windows 10, there are sever
 
 ** Browser
 
-I try so many solutions but still can't fix it, so I just install a google chrome in Linux, and use it as my default browser.
++I try so many solutions but still can't fix it, so I just install a google chrome in Linux, and use it as my default browser.+
 
-Here are some program I ever use but not work:
++Here are some program I ever use but not work:+
 
-- wslview
-- /mnt/c/Program Files/Google/Chrome/Application/chrome.exe
-- MicrosoftEdge.exe (location)
++- wslview+
++- /mnt/c/Program Files/Google/Chrome/Application/chrome.exe+
++- MicrosoftEdge.exe (location)+
 
-So Maybe Later I should fix it.
++So Maybe Later I should fix it.+
+
+Don't know why, but I finally fix it.
 
 #+begin_src emacs-lisp
   (when (and (eq system-type 'gnu/linux)
