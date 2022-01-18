@@ -111,8 +111,7 @@
 ;;    (cond
 ;;     ((member "WenQuanYi Micro Hei" (font-family-list)) "WenQuanYi Micro Hei")))))
 
-(set-face-attribute 'default nil 
-                    :height 160)
+(set-face-attribute 'default nil :height 160)
 
 (use-package emojify)
 
@@ -517,6 +516,13 @@
      :hook (typescript-mode . lsp-deferred)
      :config
      (setq typescript-indent-level 2))
+
+(use-package lsp-python-ms
+  :ensure t
+  :init (setq lsp-python-ms-auto-install-server t)
+  :hook (python-mode . (lambda ()
+                         (require 'lsp-python-ms)
+                         (lsp))))  ; or lsp-deferred
 
 (use-package company
   :after lsp-mode

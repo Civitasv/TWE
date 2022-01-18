@@ -9,6 +9,16 @@
 
 Emacs Is A Way To Think!
 
+I use Emacs maily to:
+  - write blogs
+  - web development
+
+For python, I'll still use Vs Code for now.
+
+For java, I'll still use Idea.
+
+I don't think Emacs can substitute them now, but I'll be very happy if I can in the future.
+  
 This file is my configuration of Emacs, and I feel that it's a good way for me to make a org file to organize the configuration. So, let's start it!
 
 First of all, I don't like the welcome messages.
@@ -189,8 +199,7 @@ I like the Fira Code.
   ;;    (cond
   ;;     ((member "WenQuanYi Micro Hei" (font-family-list)) "WenQuanYi Micro Hei")))))
 
-  (set-face-attribute 'default nil 
-                      :height 160)
+  (set-face-attribute 'default nil :height 160)
 #+end_src
 
 #+begin_src emacs-lisp
@@ -738,7 +747,6 @@ Try these commands with =M-x=:
 #+end_src
 
 *** TypeScript
-
 #+begin_src emacs-lisp
 
   (add-to-list 'exec-path "/root/.nvm/versions/node/v17.3.1/bin")
@@ -748,6 +756,17 @@ Try these commands with =M-x=:
        :hook (typescript-mode . lsp-deferred)
        :config
        (setq typescript-indent-level 2))
+#+end_src
+
+*** Python
+
+#+begin_src emacs-lisp
+  (use-package lsp-python-ms
+    :ensure t
+    :init (setq lsp-python-ms-auto-install-server t)
+    :hook (python-mode . (lambda ()
+                           (require 'lsp-python-ms)
+                           (lsp))))  ; or lsp-deferred
 #+end_src
 
 *** Company Mode
