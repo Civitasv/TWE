@@ -522,9 +522,10 @@ This section contains the basic configuration for org-mode plus the configuratio
     (setq org-log-into-drawer t)
 
     (setq org-agenda-files
-          '("/mnt/c/Users/senhu/app/workflow/project/org/tasks.org"
-            "/mnt/c/Users/senhu/app/workflow/project/org/habits.org"
-            "/mnt/c/Users/senhu/app/workflow/project/org/birthdays.org"))
+          '("/mnt/c/Users/senhu/app/workflow/project/org/Tasks.org"
+            "/mnt/c/Users/senhu/app/workflow/project/org/Habits.org"
+            "/mnt/c/Users/senhu/app/workflow/project/org/Archive.org"
+            "/mnt/c/Users/senhu/app/workflow/project/org/Birthdays.org"))
 
     ;; add org-habit, which enables us to show in agenda the STYLE
     ;; which value is habit
@@ -616,7 +617,7 @@ This section contains the basic configuration for org-mode plus the configuratio
 
     (setq org-capture-templates
           `(("t" "Tasks / Projects")
-            ("tt" "Task" entry (file+olp "/mnt/c/Users/senhu/app/workflow/project/org/Tasks.org" "Inbox")
+            ("tt" "Task" entry (file+olp "/mnt/c/Users/senhu/app/workflow/project/org/Tasks.org" "Task")
              "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)
 
             ("j" "Journal Entries")
@@ -704,6 +705,10 @@ I don't want execute =org-babel-tangle= every time to make the configuration fil
     :init
     (setq lsp-keymap-prefix "C-c l")  ;; Or 'C-l', 's-l'
     (setq lsp-modeline-diagnostics-scope :workspace)
+    (setq gc-cons-threshold 100000000)
+    (setq read-process-output-max (* 1024 1024)) ;; 1mb
+    (setq lsp-log-io nil)
+    (setq create-lockfiles nil)
     :config
     (lsp-enable-which-key-integration t))
 #+end_src
@@ -721,6 +726,10 @@ I don't want execute =org-babel-tangle= every time to make the configuration fil
 
 **** lsp-treemacs
 
+It depend on treemacs, which kinda like EClipse, we can add or remove workspace to it.
+
+The prefix is ==Ctrl+c Ctrl+p==. 
+
 [[https://github.com/emacs-lsp/lsp-treemacs][lsp-treemacs]] provides nice tree views for different aspects of your code like symbols in a file, references of a symbol, or diagnostic messages (errors and warnings) that are found in your code.
 
 Try these commands with =M-x=:
@@ -730,8 +739,34 @@ Try these commands with =M-x=:
 - =lsp-treemacs-error-list= - Show a tree view for the diagnostic messages in the project
 
 #+begin_src emacs-lisp
-(use-package lsp-treemacs
-  :after lsp)
+  (use-package treemacs
+    :defer t
+    :bind
+    (:map global-map
+          ("M-0"       . treemacs-select-window)
+          ("C-x t 1"   . treemacs-delete-other-windows)
+          ("C-x t t"   . treemacs)
+          ("C-x t d"   . treemacs-select-directory)
+          ("C-x t B"   . treemacs-bookmark)
+          ("C-x t C-t" . treemacs-find-file)))
+
+  (use-package treemacs-evil
+    :after (treemacs evil)
+    :ensure t)
+
+  (use-package treemacs-projectile
+    :after (treemacs projectile)
+    :ensure t)
+  (use-package treemacs-magit
+    :after (treemacs magit)
+    :ensure t)
+  (use-package lsp-treemacs
+    :after lsp)
+
+  ;; let treemacs use all-the-icons
+  (use-package treemacs-all-the-icons
+    :config
+    (treemacs-load-theme "all-the-icons"))
 #+end_src
 
 **** lsp-ivy
@@ -747,7 +782,6 @@ Try these commands with =M-x=:
 (use-package lsp-ivy)
 #+end_src
 
-
 *** TypeScript
 
 **** Language Server
@@ -760,6 +794,15 @@ Try these commands with =M-x=:
     :hook (typescript-mode . lsp-deferred)
     :config
     (setq typescript-indent-level 2))
+#+end_src
+
+*** Vue
+
+#+begin_src emacs-lisp
+  (use-package vue-mode
+    :mode "\\.vue\\'"
+    :hook (vue-mode . lsp-deferred))
+  (add-hook 'vue-mode-hook #'lsp)
 #+end_src
 
 *** Python
@@ -803,7 +846,7 @@ I often want to go to a new line when I touch =<return>=, buf default it will tr
 
 ** Projectile
 
-[[https://projectile.mx/][Projectile]] is a project management library for Emacs which makes it a lot easier to navigate around code projects for various languages. Many packages integrate with Projectile so it¡¯s a good idea to have it installed even if you don¡¯t use its commands directly.
+[[https://projectile.mx/][Projectile]] is a project management library for Emacs which makes it a lot easier to navigate around code projects for various languages. Many packages integrate with Projectile so it's a good idea to have it installed even if you don't use its commands directly.
 
 #+begin_src emacs-lisp
   (use-package projectile
@@ -852,16 +895,17 @@ Emacs’ built in commenting functionality comment-dwim (usually bound to M-;) d
 [[https://github.com/Fanael/rainbow-delimiters][rainbow-delimiters]] is useful in programming modes because it colorizes nested parentheses and brackets according to their nesting depth. This makes it a lot easier to visually match parentheses in Emacs Lisp code without having to count them yourself.
 
 #+begin_src emacs-lisp
-;; make parentheses more beautiful
-(use-package rainbow-delimiters
-  :hook (prog-mode . rainbow-delimiters-mode))
+  ;; make parentheses more beautiful
+  (use-package rainbow-delimiters
+    :hook (prog-mode . rainbow-delimiters-mode))
+
 #+end_src
 
 ** Bracket Auto Complete
 
 #+begin_src emacs-lisp
-(add-hook 'after-init-hook (lambda () (setq electric-pair-mode t)))
-#+end_src>
+  (add-hook 'emacs-startup-hook (lambda () (electric-pair-mode t)))
+#+end_src
 
 * Terminals
 

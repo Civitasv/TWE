@@ -340,9 +340,10 @@
   (setq org-log-into-drawer t)
 
   (setq org-agenda-files
-        '("/mnt/c/Users/senhu/app/workflow/project/org/tasks.org"
-          "/mnt/c/Users/senhu/app/workflow/project/org/habits.org"
-          "/mnt/c/Users/senhu/app/workflow/project/org/birthdays.org"))
+        '("/mnt/c/Users/senhu/app/workflow/project/org/Tasks.org"
+          "/mnt/c/Users/senhu/app/workflow/project/org/Habits.org"
+          "/mnt/c/Users/senhu/app/workflow/project/org/Archive.org"
+          "/mnt/c/Users/senhu/app/workflow/project/org/Birthdays.org"))
 
   ;; add org-habit, which enables us to show in agenda the STYLE
   ;; which value is habit
@@ -434,7 +435,7 @@
 
   (setq org-capture-templates
         `(("t" "Tasks / Projects")
-          ("tt" "Task" entry (file+olp "/mnt/c/Users/senhu/app/workflow/project/org/Tasks.org" "Inbox")
+          ("tt" "Task" entry (file+olp "/mnt/c/Users/senhu/app/workflow/project/org/Tasks.org" "Task")
            "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)
 
           ("j" "Journal Entries")
@@ -497,6 +498,10 @@
   :init
   (setq lsp-keymap-prefix "C-c l")  ;; Or 'C-l', 's-l'
   (setq lsp-modeline-diagnostics-scope :workspace)
+  (setq gc-cons-threshold 100000000)
+  (setq read-process-output-max (* 1024 1024)) ;; 1mb
+  (setq lsp-log-io nil)
+  (setq create-lockfiles nil)
   :config
   (lsp-enable-which-key-integration t))
 
@@ -505,8 +510,34 @@
   :custom
   (lsp-ui-doc-position 'bottom))
 
+(use-package treemacs
+  :defer t
+  :bind
+  (:map global-map
+        ("M-0"       . treemacs-select-window)
+        ("C-x t 1"   . treemacs-delete-other-windows)
+        ("C-x t t"   . treemacs)
+        ("C-x t d"   . treemacs-select-directory)
+        ("C-x t B"   . treemacs-bookmark)
+        ("C-x t C-t" . treemacs-find-file)))
+
+(use-package treemacs-evil
+  :after (treemacs evil)
+  :ensure t)
+
+(use-package treemacs-projectile
+  :after (treemacs projectile)
+  :ensure t)
+(use-package treemacs-magit
+  :after (treemacs magit)
+  :ensure t)
 (use-package lsp-treemacs
   :after lsp)
+
+;; let treemacs use all-the-icons
+(use-package treemacs-all-the-icons
+  :config
+  (treemacs-load-theme "all-the-icons"))
 
 (use-package lsp-ivy)
 
@@ -517,6 +548,11 @@
   :hook (typescript-mode . lsp-deferred)
   :config
   (setq typescript-indent-level 2))
+
+(use-package vue-mode
+  :mode "\\.vue\\'"
+  :hook (vue-mode . lsp-deferred))
+(add-hook 'vue-mode-hook #'lsp)
 
 (use-package lsp-python-ms
   :ensure t
@@ -572,6 +608,8 @@
 ;; make parentheses more beautiful
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode))
+
+(add-hook 'emacs-startup-hook (lambda () (electric-pair-mode t)))
 
 (when (string-equal system-type "gnu/linux")  ; Linux
   (use-package term
