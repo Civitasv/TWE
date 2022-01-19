@@ -178,8 +178,8 @@ I like the Fira Code.
     (when (member "Menlo" (font-family-list))
       (set-frame-font "Menlo" t t)))
    ((string-equal system-type "gnu/linux") ; linux
-    (when (member "DejaVu Sans Mono" (font-family-list))
-      (set-frame-font "DejaVu Sans Mono" t t))))
+    (when (member "Fira Code" (font-family-list))
+      (set-frame-font "Fira Code Retina" t t))))
 
   ;; ;; 汉语设置
   ;; (set-fontset-font
@@ -199,7 +199,7 @@ I like the Fira Code.
   ;;    (cond
   ;;     ((member "WenQuanYi Micro Hei" (font-family-list)) "WenQuanYi Micro Hei")))))
 
-  (set-face-attribute 'default nil :height 160)
+  (set-face-attribute 'default nil :height 120)
 #+end_src
 
 #+begin_src emacs-lisp
@@ -522,9 +522,9 @@ This section contains the basic configuration for org-mode plus the configuratio
     (setq org-log-into-drawer t)
 
     (setq org-agenda-files
-          '("C:/Users/senhu/app/workflow/project/org/tasks.org"
-            "C:/Users/senhu/app/workflow/project/org/habits.org"
-            "C:/Users/senhu/app/workflow/project/org/birthdays.org"))
+          '("/mnt/c/Users/senhu/app/workflow/project/org/tasks.org"
+            "/mnt/c/Users/senhu/app/workflow/project/org/habits.org"
+            "/mnt/c/Users/senhu/app/workflow/project/org/birthdays.org"))
 
     ;; add org-habit, which enables us to show in agenda the STYLE
     ;; which value is habit
@@ -616,27 +616,27 @@ This section contains the basic configuration for org-mode plus the configuratio
 
     (setq org-capture-templates
           `(("t" "Tasks / Projects")
-            ("tt" "Task" entry (file+olp "C:/Users/senhu/app/workflow/project/org/Tasks.org" "Inbox")
+            ("tt" "Task" entry (file+olp "/mnt/c/Users/senhu/app/workflow/project/org/Tasks.org" "Inbox")
              "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)
 
             ("j" "Journal Entries")
             ("jj" "Journal" entry
-             (file+olp+datetree "C:/Users/senhu/app/workflow/project/org/Journal.org")
+             (file+olp+datetree "/mnt/c/Users/senhu/app/workflow/project/org/Journal.org")
              "\n* %<%I:%M %p> - Journal :journal:\n\n%?\n\n"
              :clock-in :clock-resume
              :empty-lines 1)
             ("jm" "Meeting" entry
-             (file+olp+datetree "C:/Users/senhu/app/workflow/project/org/Journal.org")
+             (file+olp+datetree "/mnt/c/Users/senhu/app/workflow/project/org/Journal.org")
              "* %<%I:%M %p> - %a :meetings:\n\n%?\n\n"
              :clock-in :clock-resume
              :empty-lines 1)
 
             ("w" "Workflows")
-            ("we" "Checking Email" entry (file+olp+datetree "C:/Users/senhu/app/workflow/project/org/Journal.org")
+            ("we" "Checking Email" entry (file+olp+datetree "/mnt/c/Users/senhu/app/workflow/project/org/Journal.org")
              "* Checking Email :email:\n\n%?" :clock-in :clock-resume :empty-lines 1)
 
             ("m" "Metrics Capture")
-            ("mw" "Weight" table-line (file+headline "C:/Users/senhu/app/workflow/project/org/Metrics.org" "Weight")
+            ("mw" "Weight" table-line (file+headline "/mnt/c/Users/senhu/app/workflow/project/org/Metrics.org" "Weight")
              "| %U | %^{Weight} | %^{Notes} |" :kill-buffer t)))
 
     (setq org-src-tab-acts-natively t)
@@ -703,6 +703,7 @@ I don't want execute =org-babel-tangle= every time to make the configuration fil
     :hook (lsp-mode . civ/lsp-mode-setup)
     :init
     (setq lsp-keymap-prefix "C-c l")  ;; Or 'C-l', 's-l'
+    (setq lsp-modeline-diagnostics-scope :workspace)
     :config
     (lsp-enable-which-key-integration t))
 #+end_src
@@ -712,10 +713,10 @@ I don't want execute =org-babel-tangle= every time to make the configuration fil
 [[https://emacs-lsp.github.io/lsp-ui/][lsp-ui]] is a set of UI enhancements built on top of lsp-mode which make Emacs feel even more like an IDE. Check out the screenshots on the lsp-ui homepage (linked at the beginning of this paragraph) to see examples of what it can do.
 
 #+begin_src emacs-lisp
-(use-package lsp-ui
-  :hook (lsp-mode . lsp-ui-mode)
-  :custom
-  (lsp-ui-doc-position 'bottom))
+  (use-package lsp-ui
+    :hook (lsp-mode . lsp-ui-mode)
+    :custom
+    (lsp-ui-doc-position 'bottom))
 #+end_src
 
 **** lsp-treemacs
@@ -746,16 +747,19 @@ Try these commands with =M-x=:
 (use-package lsp-ivy)
 #+end_src
 
-*** TypeScript
-#+begin_src emacs-lisp
 
+*** TypeScript
+
+**** Language Server
+
+#+begin_src emacs-lisp
   (add-to-list 'exec-path "/root/.nvm/versions/node/v17.3.1/bin")
 
-     (use-package typescript-mode
-       :mode "\\.ts\\'"
-       :hook (typescript-mode . lsp-deferred)
-       :config
-       (setq typescript-indent-level 2))
+  (use-package typescript-mode
+    :mode "\\.ts\\'"
+    :hook (typescript-mode . lsp-deferred)
+    :config
+    (setq typescript-indent-level 2))
 #+end_src
 
 *** Python
@@ -775,13 +779,17 @@ Try these commands with =M-x=:
 
 We also use [[https://github.com/sebastiencs/company-box][company-box]] to further enhance the look of the completions with icons and better overall presentation.
 
+I often want to go to a new line when I touch =<return>=, buf default it will triger =company-complete-selection=, so I just change it to =nil=, and use =<tab= to =select= instead.
+
 #+begin_src emacs-lisp
 
   (use-package company
     :after lsp-mode
     :hook (lsp-mode . company-mode)
     :bind (:map company-active-map
-                ("<tab>" . company-complete-selection))
+                ("<tab>" . company-complete-selection)
+                ("<return>" . nil)
+                ("RET" . nil))
     (:map lsp-mode-map
           ("<tab>" . company-indent-or-complete-common))
     :custom
@@ -805,8 +813,8 @@ We also use [[https://github.com/sebastiencs/company-box][company-box]] to furth
     :bind-keymap
     ("C-c p" . projectile-command-map)
     :init
-    (when (file-directory-p "C:/Users/senhu/app/workflow/project")
-      (setq projectile-project-search-path '("C:/Users/senhu/app/workflow/project")))
+    (when (file-directory-p "/mnt/c/Users/senhu/app/workflow/project")
+      (setq projectile-project-search-path '("/mnt/c/Users/senhu/app/workflow/project")))
     (setq projectile-switch-project-action #'projectile-dired))
 
   (use-package counsel-projectile
@@ -848,6 +856,12 @@ Emacs’ built in commenting functionality comment-dwim (usually bound to M-;) d
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode))
 #+end_src
+
+** Bracket Auto Complete
+
+#+begin_src emacs-lisp
+(add-hook 'after-init-hook (lambda () (setq electric-pair-mode t)))
+#+end_src>
 
 * Terminals
 

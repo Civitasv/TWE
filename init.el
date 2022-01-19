@@ -90,8 +90,8 @@
   (when (member "Menlo" (font-family-list))
     (set-frame-font "Menlo" t t)))
  ((string-equal system-type "gnu/linux") ; linux
-  (when (member "DejaVu Sans Mono" (font-family-list))
-    (set-frame-font "DejaVu Sans Mono" t t))))
+  (when (member "Fira Code" (font-family-list))
+    (set-frame-font "Fira Code Retina" t t))))
 
 ;; ;; 汉语设置
 ;; (set-fontset-font
@@ -111,7 +111,7 @@
 ;;    (cond
 ;;     ((member "WenQuanYi Micro Hei" (font-family-list)) "WenQuanYi Micro Hei")))))
 
-(set-face-attribute 'default nil :height 160)
+(set-face-attribute 'default nil :height 120)
 
 (use-package emojify)
 
@@ -340,9 +340,9 @@
   (setq org-log-into-drawer t)
 
   (setq org-agenda-files
-        '("C:/Users/senhu/app/workflow/project/org/tasks.org"
-          "C:/Users/senhu/app/workflow/project/org/habits.org"
-          "C:/Users/senhu/app/workflow/project/org/birthdays.org"))
+        '("/mnt/c/Users/senhu/app/workflow/project/org/tasks.org"
+          "/mnt/c/Users/senhu/app/workflow/project/org/habits.org"
+          "/mnt/c/Users/senhu/app/workflow/project/org/birthdays.org"))
 
   ;; add org-habit, which enables us to show in agenda the STYLE
   ;; which value is habit
@@ -434,27 +434,27 @@
 
   (setq org-capture-templates
         `(("t" "Tasks / Projects")
-          ("tt" "Task" entry (file+olp "C:/Users/senhu/app/workflow/project/org/Tasks.org" "Inbox")
+          ("tt" "Task" entry (file+olp "/mnt/c/Users/senhu/app/workflow/project/org/Tasks.org" "Inbox")
            "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)
 
           ("j" "Journal Entries")
           ("jj" "Journal" entry
-           (file+olp+datetree "C:/Users/senhu/app/workflow/project/org/Journal.org")
+           (file+olp+datetree "/mnt/c/Users/senhu/app/workflow/project/org/Journal.org")
            "\n* %<%I:%M %p> - Journal :journal:\n\n%?\n\n"
            :clock-in :clock-resume
            :empty-lines 1)
           ("jm" "Meeting" entry
-           (file+olp+datetree "C:/Users/senhu/app/workflow/project/org/Journal.org")
+           (file+olp+datetree "/mnt/c/Users/senhu/app/workflow/project/org/Journal.org")
            "* %<%I:%M %p> - %a :meetings:\n\n%?\n\n"
            :clock-in :clock-resume
            :empty-lines 1)
 
           ("w" "Workflows")
-          ("we" "Checking Email" entry (file+olp+datetree "C:/Users/senhu/app/workflow/project/org/Journal.org")
+          ("we" "Checking Email" entry (file+olp+datetree "/mnt/c/Users/senhu/app/workflow/project/org/Journal.org")
            "* Checking Email :email:\n\n%?" :clock-in :clock-resume :empty-lines 1)
 
           ("m" "Metrics Capture")
-          ("mw" "Weight" table-line (file+headline "C:/Users/senhu/app/workflow/project/org/Metrics.org" "Weight")
+          ("mw" "Weight" table-line (file+headline "/mnt/c/Users/senhu/app/workflow/project/org/Metrics.org" "Weight")
            "| %U | %^{Weight} | %^{Notes} |" :kill-buffer t)))
 
   (setq org-src-tab-acts-natively t)
@@ -496,6 +496,7 @@
   :hook (lsp-mode . civ/lsp-mode-setup)
   :init
   (setq lsp-keymap-prefix "C-c l")  ;; Or 'C-l', 's-l'
+  (setq lsp-modeline-diagnostics-scope :workspace)
   :config
   (lsp-enable-which-key-integration t))
 
@@ -511,11 +512,11 @@
 
 (add-to-list 'exec-path "/root/.nvm/versions/node/v17.3.1/bin")
 
-   (use-package typescript-mode
-     :mode "\\.ts\\'"
-     :hook (typescript-mode . lsp-deferred)
-     :config
-     (setq typescript-indent-level 2))
+(use-package typescript-mode
+  :mode "\\.ts\\'"
+  :hook (typescript-mode . lsp-deferred)
+  :config
+  (setq typescript-indent-level 2))
 
 (use-package lsp-python-ms
   :ensure t
@@ -528,7 +529,9 @@
   :after lsp-mode
   :hook (lsp-mode . company-mode)
   :bind (:map company-active-map
-              ("<tab>" . company-complete-selection))
+              ("<tab>" . company-complete-selection)
+              ("<return>" . nil)
+              ("RET" . nil))
   (:map lsp-mode-map
         ("<tab>" . company-indent-or-complete-common))
   :custom
@@ -545,8 +548,8 @@
   :bind-keymap
   ("C-c p" . projectile-command-map)
   :init
-  (when (file-directory-p "C:/Users/senhu/app/workflow/project")
-    (setq projectile-project-search-path '("C:/Users/senhu/app/workflow/project")))
+  (when (file-directory-p "/mnt/c/Users/senhu/app/workflow/project")
+    (setq projectile-project-search-path '("/mnt/c/Users/senhu/app/workflow/project")))
   (setq projectile-switch-project-action #'projectile-dired))
 
 (use-package counsel-projectile
