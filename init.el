@@ -18,6 +18,14 @@
 
 ;; (add-hook 'emacs-startup-hook #'civ/display-startup-time)
 
+(if (not (display-graphic-p))
+    (progn
+      ;; 增大垃圾回收的阈值，提高整体性能（内存换效率）
+      (setq gc-cons-threshold (* 8192 8192 100))
+      ;; 增大同LSP服务器交互时的读取文件的大小
+      (setq read-process-output-max (* 1024 1024 256)) ;; 128MB
+      ))
+
 (set-language-environment "UTF-8")
 
 (when (string-equal system-type "windows-nt") ; Microsoft Windows
@@ -59,12 +67,30 @@
 ;;     (insert clip)
 ;;     (if arg (kill-new clip))))
 
+(use-package rime
+  :custom
+  (default-input-method "rime") 
+  (rime-show-candidate 'posframe)
+  (rime-posframe-properties
+   (list :background-color "#073642"
+         :foreground-color "#839496"
+         :internal-border-width 1))
+  :config
+  (setq rime-inline-ascii-trigger 'shift-l)
+  (setq rime-translate-keybindings
+        '("C-f" "C-b" "C-n" "C-p" "C-g" "<left>" "<right>" "<up>" "<down>" "<prior>" "<next>" "<delete>"))
+  (setq rime-cursor "|")
+  (set-face-attribute 'rime-default-face nil :foreground "#839496" :background "#073642"))
+
+(defvar civ/default-font-size 160)
+(defvar civ/default-variable-font-size 160)
+
 ;; UI settings
 (scroll-bar-mode -1)	; Disable the scrollbar
 (tool-bar-mode -1)	; Disable the toolbar
 (tooltip-mode -1)	; Disable tooltips
 (set-fringe-mode 10)    ; Give some breathing room
-(menu-bar-mode -1)	; Disable the menu bar
+(menu-bar-mode 1)	; Disable the menu bar
 
 ;; Set up the visible bell
 (setq visible-bell t)
@@ -82,18 +108,19 @@
 
 ;; font setting
 ;; set default font
-(cond
- ((string-equal system-type "windows-nt") ; Microsoft Windows
-  (when (member "Fira Code Retina" (font-family-list))
-    (set-frame-font "Fira Code Retina" t t)))
- ((string-equal system-type "darwin") ; macOS
-  (when (member "Menlo" (font-family-list))
-    (set-frame-font "Menlo" t t)))
- ((string-equal system-type "gnu/linux") ; linux
-  (when (member "Fira Code" (font-family-list))
-    (set-frame-font "Fira Code Retina" t t))))
 
-;; ;; 汉语设置
+;; (cond
+;;  ((string-equal system-type "windows-nt") ; Microsoft Windows
+;;   (when (member "Fira Code Retina" (font-family-list))
+;;     (set-frame-font "Fira Code Retina" nil t)))
+;;  ((string-equal system-type "darwin") ; macOS
+;;   (when (member "Menlo" (font-family-list))
+;;     (set-frame-font "Menlo" nil t)))
+;;  ((string-equal system-type "gnu/linux") ; linux
+;;   (when (member "Fira Code Retina" (font-family-list))
+;;     (set-frame-font "Fira Code Retina" nil t))))
+
+;; ;; ;; 汉语设置
 ;; (set-fontset-font
 ;;  t
 ;;  'han
@@ -109,9 +136,17 @@
 ;;     ((member "Heiti TC" (font-family-list)) "Heiti TC")))
 ;;   ((string-equal system-type "gnu/linux")
 ;;    (cond
+;;     ((member "微软雅黑" (font-family-list)) "微软雅黑")
 ;;     ((member "WenQuanYi Micro Hei" (font-family-list)) "WenQuanYi Micro Hei")))))
 
-(set-face-attribute 'default nil :height 120)
+(set-face-attribute 'default nil :font "Fira Code Retina" :height civ/default-font-size)
+
+;; Set the fixed pitch face
+(set-face-attribute 'fixed-pitch nil :font "Fira Code Retina" :height civ/default-font-size)
+
+;; Set the variable pitch face
+(set-face-attribute 'variable-pitch nil :font "Fira Code Retina" :height civ/default-variable-font-size :weight 'regular)
+;; (set-face-attribute "Fira Code Retina" nil :family "Fira Code Retina")
 
 (use-package emojify)
 
@@ -173,6 +208,7 @@
     "t" '(counsel-load-theme :which-key "choose theme")
     "z" '(hydra-text-scale/body :which-key "scale text")
     "a" '(hydra-agenda/body :which-key "org agenda")
+    "c" '(counsel-org-capture :which-key "org capture")
     "s" '(org-insert-subheading :which-key "insert subheading")))
 
 (use-package hydra)
@@ -220,7 +256,17 @@
 
 ;; install doom theme
 (use-package doom-themes
-  :init (load-theme 'doom-dracula t))
+  :init (load-theme 'doom-material t)
+  :config
+  ;; Global settings (defaults)
+  (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
+        doom-themes-enable-italic t) ; if nil, italics is universally disabled
+  ;; Enable flashing mode-line on errors
+  (doom-themes-visual-bell-config)
+  ;; (setq doom-themes-treemacs-theme "doom-dracula") ; use "doom-colors" for less minimal icon theme
+  ;; (doom-themes-treemacs-config)
+  ;; Corrects (and improves) org-mode's native fontification.
+  (doom-themes-org-config))
 
 ;; before using it, you should use `all-the-icons-install-fonts` to install the fonts
 (use-package all-the-icons
@@ -293,7 +339,7 @@
      (python .t)))
 
   (setq org-confirm-babel-evaluate nil)
-  (setq org-babel-python-command "python3"))
+  (setq org-babel-python-command "python"))
 
 (defun civ/org-font-setup ()
   ;; Replace list hyphen with dot
@@ -343,6 +389,7 @@
         '("/mnt/c/Users/senhu/app/workflow/project/org/Tasks.org"
           "/mnt/c/Users/senhu/app/workflow/project/org/Habits.org"
           "/mnt/c/Users/senhu/app/workflow/project/org/Archive.org"
+          "/mnt/c/Users/senhu/app/workflow/project/sicp/link.org"
           "/mnt/c/Users/senhu/app/workflow/project/org/Birthdays.org"))
 
   ;; add org-habit, which enables us to show in agenda the STYLE
@@ -365,7 +412,7 @@
           (sequence "BACKLOG(b)" "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/!)" "HOLD(h)" "|" "COMPLETED(c)" "CANC(k@)")))
 
   (setq org-refile-targets
-        '(("Archive.org" :maxlevel . 1)))
+        '(("/mnt/c/Users/senhu/app/workflow/project/org/Archive.org" :maxlevel . 1)))
 
   ;; Save Org buffers after refiling!
   (advice-add 'org-refile :after 'org-save-all-org-buffers)
@@ -373,7 +420,7 @@
   ;; initial some tags
   (setq org-tag-alist
         '((:startgroup)
-          ; Put mutually exclusive tags here
+                                        ; Put mutually exclusive tags here
           (:endgroup)
           ("@home" . ?H)
           ("@work" . ?W)
@@ -450,6 +497,10 @@
            :clock-in :clock-resume
            :empty-lines 1)
 
+          ("s" "SICP")
+          ("sl" "External Link" table-line (file+headline "/mnt/c/Users/senhu/app/workflow/project/sicp/link.org" "Link")
+           "| %U | %^{word or sentence} | %^{Link}|" :empty-lines 1)
+
           ("w" "Workflows")
           ("we" "Checking Email" entry (file+olp+datetree "/mnt/c/Users/senhu/app/workflow/project/org/Journal.org")
            "* Checking Email :email:\n\n%?" :clock-in :clock-resume :empty-lines 1)
@@ -498,8 +549,6 @@
   :init
   (setq lsp-keymap-prefix "C-c l")  ;; Or 'C-l', 's-l'
   (setq lsp-modeline-diagnostics-scope :workspace)
-  (setq gc-cons-threshold 100000000)
-  (setq read-process-output-max (* 1024 1024)) ;; 1mb
   (setq lsp-log-io nil)
   (setq create-lockfiles nil)
   :config
@@ -554,6 +603,8 @@
   :hook (vue-mode . lsp-deferred))
 (add-hook 'vue-mode-hook #'lsp)
 
+(add-to-list 'exec-path "/root/anaconda3/bin")
+(setq python-shell-interpreter "/root/anaconda3/bin/python")
 (use-package lsp-python-ms
   :ensure t
   :init (setq lsp-python-ms-auto-install-server t)
