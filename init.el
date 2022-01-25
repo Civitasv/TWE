@@ -207,6 +207,8 @@
   (civitasv/leader-keys
     "t" '(counsel-load-theme :which-key "choose theme")
     "z" '(hydra-text-scale/body :which-key "scale text")
+    "d" '(lsp-find-definition :which-key "find definition")
+    "f" '(lsp-format-buffer :which-key "format file")
     "a" '(hydra-agenda/body :which-key "org agenda")
     "c" '(counsel-org-capture :which-key "org capture")
     "s" '(org-insert-subheading :which-key "insert subheading")))
@@ -542,6 +544,8 @@
 
 (add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'efs/org-babel-tangle-config)))
 
+(add-to-list 'exec-path "/root/.nvm/versions/node/v17.3.1/bin")
+
 (defun civ/lsp-mode-setup ()
   (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
   (lsp-headerline-breadcrumb-mode))
@@ -557,12 +561,21 @@
   (setq lsp-log-io nil)
   (setq create-lockfiles nil)
   :config
-  (lsp-enable-which-key-integration t))
+  (lsp-enable-which-key-integration t)
+  :custom
+  (lsp-eldoc-enable-hover t)
+  (lsp-eldoc-render-all t))
 
 (use-package lsp-ui
   :hook (lsp-mode . lsp-ui-mode)
   :custom
-  (lsp-ui-doc-position 'bottom))
+  (lsp-ui-sideline-show-diagnostics t)
+  (lsp-ui-sideline-show-hover nil)
+  (lsp-ui-sideline-show-code-actions nil)
+  (lsp-ui-doc-enable t)
+  (lsp-ui-doc-position 'at-point)
+  (lsp-ui-doc-show-with-cursor nil)
+  (lsp-ui-doc-show-with-mouse t))
 
 (use-package treemacs
   :defer t
@@ -595,18 +608,24 @@
 
 (use-package lsp-ivy)
 
-(add-to-list 'exec-path "/root/.nvm/versions/node/v17.3.1/bin")
+(use-package emmet-mode)
 
-(use-package typescript-mode
-  :mode "\\.ts\\'"
-  :hook (typescript-mode . lsp-deferred)
+(use-package web-mode
+  :mode ("\\.html\\'" "\\.css\\'" "\\.js\\'" "\\.ts\\'" "\\.vue\\'" "\\.json\\'" "\\.less\\'" "\\.jsx\\'")
+  :hook ((web-mode . lsp-deferred)
+         (web-mode . emmet-mode))
   :config
-  (setq typescript-indent-level 2))
-
-(use-package vue-mode
-  :mode "\\.vue\\'"
-  :hook (vue-mode . lsp-deferred))
-(add-hook 'vue-mode-hook #'lsp)
+  (setq web-mode-markup-indent-offset 2)
+  (setq web-mode-css-indent-offset 2)
+  (setq web-mode-code-indent-offset 2)
+  (setq web-mode-style-padding 1)
+  (setq web-mode-script-padding 1)
+  (setq web-mode-block-padding 0)
+  (setq web-mode-comment-style 2)
+  (setq web-mode-enable-auto-pairing t)
+  (setq web-mode-enable-css-colorization t)
+  :bind (:map web-mode-map
+              ("C-k" . web-mode-tag-match)))
 
 (add-to-list 'exec-path "/root/anaconda3/bin")
 (setq python-shell-interpreter "/root/anaconda3/bin/python")
@@ -615,17 +634,17 @@
   :init (setq lsp-python-ms-auto-install-server t)
   :hook (python-mode . (lambda ()
                          (require 'lsp-python-ms)
-                         (lsp))))  ; or lsp-deferred
+                         (lsp-deferred))))  ; or lsp-deferred
 
 (use-package company
   :after lsp-mode
   :hook (lsp-mode . company-mode)
   :bind (:map company-active-map
               ("<tab>" . company-complete-selection)
-              ("<return>" . nil)
-              ("RET" . nil))
-  (:map lsp-mode-map
-        ("<tab>" . company-indent-or-complete-common))
+              ("<return>" . company-complete-selection)
+              ("RET" . company-complete-selection))
+  ;; (:map lsp-mode-map
+  ;;       ("<tab>" . company-indent-or-complete-common))
   :custom
   (company-minimum-prefix-length 1)
   (company-idle-delay 0.0))

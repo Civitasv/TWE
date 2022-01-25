@@ -344,6 +344,8 @@ Hydra is best to make keybindings that have same prefix.
     (civitasv/leader-keys
       "t" '(counsel-load-theme :which-key "choose theme")
       "z" '(hydra-text-scale/body :which-key "scale text")
+      "d" '(lsp-find-definition :which-key "find definition")
+      "f" '(lsp-format-buffer :which-key "format file")
       "a" '(hydra-agenda/body :which-key "org agenda")
       "c" '(counsel-org-capture :which-key "org capture")
       "s" '(org-insert-subheading :which-key "insert subheading")))
@@ -755,9 +757,21 @@ I don't want execute =org-babel-tangle= every time to make the configuration fil
 
 * Development
 
+** Environment
+
+Emacs cannot find where is the node, so I add it.
+
+#+begin_src emacs-lisp
+  (add-to-list 'exec-path "/root/.nvm/versions/node/v17.3.1/bin")
+#+end_src
+
 ** Languages
 *** Language Servers
 
+The steps of =lsp-mode= is:
+- Whenever we want to use lsp, we invoke lsp or lsp-deferred
+- So, we can judge the extension of the file or use hook to call it, for example, I use =web-mode= to bind html, css, js and json, then we =:hook (web-mode . lsp-defferd), thus when we open a html file, lsp-deferred will be invoked.
+  
 #+begin_src emacs-lisp
   (defun civ/lsp-mode-setup ()
     (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
@@ -774,7 +788,10 @@ I don't want execute =org-babel-tangle= every time to make the configuration fil
     (setq lsp-log-io nil)
     (setq create-lockfiles nil)
     :config
-    (lsp-enable-which-key-integration t))
+    (lsp-enable-which-key-integration t)
+    :custom
+    (lsp-eldoc-enable-hover t)
+    (lsp-eldoc-render-all t))
 #+end_src
 
 **** lsp-ui
@@ -785,7 +802,13 @@ I don't want execute =org-babel-tangle= every time to make the configuration fil
   (use-package lsp-ui
     :hook (lsp-mode . lsp-ui-mode)
     :custom
-    (lsp-ui-doc-position 'bottom))
+    (lsp-ui-sideline-show-diagnostics t)
+    (lsp-ui-sideline-show-hover nil)
+    (lsp-ui-sideline-show-code-actions nil)
+    (lsp-ui-doc-enable t)
+    (lsp-ui-doc-position 'at-point)
+    (lsp-ui-doc-show-with-cursor nil)
+    (lsp-ui-doc-show-with-mouse t))
 #+end_src
 
 **** lsp-treemacs
@@ -846,27 +869,29 @@ Try these commands with =M-x=:
 (use-package lsp-ivy)
 #+end_src
 
-*** TypeScript
+*** Web
 
-**** Language Server
+There is still a bug in this configuration, maybe my fault, maybe the bug in =web-mode=. The bug is: when there is a scoped style in =vue= which ususally is, the attributes like =color= cannot render at once. I need change it and save, then it will render right, I don't know the reason now, maybe later I will fix it.
 
 #+begin_src emacs-lisp
-  (add-to-list 'exec-path "/root/.nvm/versions/node/v17.3.1/bin")
+  (use-package emmet-mode)
 
-  (use-package typescript-mode
-    :mode "\\.ts\\'"
-    :hook (typescript-mode . lsp-deferred)
+  (use-package web-mode
+    :mode ("\\.html\\'" "\\.css\\'" "\\.js\\'" "\\.ts\\'" "\\.vue\\'" "\\.json\\'" "\\.less\\'" "\\.jsx\\'")
+    :hook ((web-mode . lsp-deferred)
+           (web-mode . emmet-mode))
     :config
-    (setq typescript-indent-level 2))
-#+end_src
-
-*** Vue
-
-#+begin_src emacs-lisp
-  (use-package vue-mode
-    :mode "\\.vue\\'"
-    :hook (vue-mode . lsp-deferred))
-  (add-hook 'vue-mode-hook #'lsp)
+    (setq web-mode-markup-indent-offset 2)
+    (setq web-mode-css-indent-offset 2)
+    (setq web-mode-code-indent-offset 2)
+    (setq web-mode-style-padding 1)
+    (setq web-mode-script-padding 1)
+    (setq web-mode-block-padding 0)
+    (setq web-mode-comment-style 2)
+    (setq web-mode-enable-auto-pairing t)
+    (setq web-mode-enable-css-colorization t)
+    :bind (:map web-mode-map
+                ("C-k" . web-mode-tag-match)))
 #+end_src
 
 *** Python
@@ -879,7 +904,7 @@ Try these commands with =M-x=:
     :init (setq lsp-python-ms-auto-install-server t)
     :hook (python-mode . (lambda ()
                            (require 'lsp-python-ms)
-                           (lsp))))  ; or lsp-deferred
+                           (lsp-deferred))))  ; or lsp-deferred
 #+end_src
 
 *** Company Mode
@@ -897,10 +922,10 @@ I often want to go to a new line when I touch =<return>=, buf default it will tr
     :hook (lsp-mode . company-mode)
     :bind (:map company-active-map
                 ("<tab>" . company-complete-selection)
-                ("<return>" . nil)
-                ("RET" . nil))
-    (:map lsp-mode-map
-          ("<tab>" . company-indent-or-complete-common))
+                ("<return>" . company-complete-selection)
+                ("RET" . company-complete-selection))
+    ;; (:map lsp-mode-map
+    ;;       ("<tab>" . company-indent-or-complete-common))
     :custom
     (company-minimum-prefix-length 1)
     (company-idle-delay 0.0))
@@ -975,7 +1000,7 @@ Emacs’ built in commenting functionality comment-dwim (usually bound to M-;) d
 
 *** Bracket Hover
 
-Also, whenever I hover on the bracket, I want it be highlight.
+Also, whenever I hover on or inside the bracket, I want it be highlight.
 
 #+begin_src emacs-lisp
   (add-hook 'prog-mode-hook (lambda () (show-paren-mode)))
