@@ -90,7 +90,7 @@
 (tool-bar-mode -1)	; Disable the toolbar
 (tooltip-mode -1)	; Disable tooltips
 (set-fringe-mode 10)    ; Give some breathing room
-(menu-bar-mode 1)	; Disable the menu bar
+(menu-bar-mode -1)	; Disable the menu bar
 
 ;; Set up the visible bell
 (setq visible-bell t)
@@ -268,6 +268,9 @@
   ;; Corrects (and improves) org-mode's native fontification.
   (doom-themes-org-config))
 
+;; highlight current line
+(global-hl-line-mode 1)
+
 ;; before using it, you should use `all-the-icons-install-fonts` to install the fonts
 (use-package all-the-icons
   :ensure t
@@ -336,7 +339,8 @@
   (org-babel-do-load-languages
    'org-babel-load-languages
    '((emacs-lisp .t)
-     (python .t)))
+     (python .t)
+     (scheme .t)))
 
   (setq org-confirm-babel-evaluate nil)
   (setq org-babel-python-command "python"))
@@ -406,6 +410,7 @@
   (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
   (add-to-list 'org-structure-template-alist '("js" . "src javascript"))
   (add-to-list 'org-structure-template-alist '("py" . "src python"))
+  (add-to-list 'org-structure-template-alist '("scm" . "src scheme"))
 
   (setq org-todo-keywords
         '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
@@ -661,6 +666,20 @@
   :hook (prog-mode . rainbow-delimiters-mode))
 
 (add-hook 'emacs-startup-hook (lambda () (electric-pair-mode t)))
+
+(add-hook 'prog-mode-hook (lambda () (show-paren-mode)))
+(setq show-paren-style 'parenthesis)
+(setq show-paren-highlight-openparen t)
+(setq show-paren-when-point-inside-paren t) 
+(setq show-paren-when-point-in-periphery nil)
+
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(hl-line ((t (:extend t :background "#2b363b"))))
+ '(show-paren-match ((t (:background "nil" :foreground "#F94892" :weight ultrabold :height 1.2 :width normal)))))
 
 (when (string-equal system-type "gnu/linux")  ; Linux
   (use-package term

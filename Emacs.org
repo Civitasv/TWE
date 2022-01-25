@@ -174,7 +174,7 @@ Basically, I don't want to show the scrollbar, toolbar, menubar and tootips.
   (tool-bar-mode -1)	; Disable the toolbar
   (tooltip-mode -1)	; Disable tooltips
   (set-fringe-mode 10)    ; Give some breathing room
-  (menu-bar-mode 1)	; Disable the menu bar
+  (menu-bar-mode -1)	; Disable the menu bar
 #+end_src
 
 And, I find that the bell annoying.
@@ -412,6 +412,9 @@ Hydra is best to make keybindings that have same prefix.
     ;; (doom-themes-treemacs-config)
     ;; Corrects (and improves) org-mode's native fontification.
     (doom-themes-org-config))
+
+  ;; highlight current line
+  (global-hl-line-mode 1)
 #+end_src
 
 ** Better Mode line
@@ -518,7 +521,8 @@ Org Babel allows us to evaluate code blocks in org file.
     (org-babel-do-load-languages
      'org-babel-load-languages
      '((emacs-lisp .t)
-       (python .t)))
+       (python .t)
+       (scheme .t)))
 
     (setq org-confirm-babel-evaluate nil)
     (setq org-babel-python-command "python"))
@@ -598,6 +602,7 @@ This section contains the basic configuration for org-mode plus the configuratio
     (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
     (add-to-list 'org-structure-template-alist '("js" . "src javascript"))
     (add-to-list 'org-structure-template-alist '("py" . "src python"))
+    (add-to-list 'org-structure-template-alist '("scm" . "src scheme"))
 
     (setq org-todo-keywords
           '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
@@ -968,7 +973,25 @@ Emacs’ built in commenting functionality comment-dwim (usually bound to M-;) d
   (add-hook 'emacs-startup-hook (lambda () (electric-pair-mode t)))
 #+end_src
 
-** Web Dev Flow
+*** Bracket Hover
+
+Also, whenever I hover on the bracket, I want it be highlight.
+
+#+begin_src emacs-lisp
+  (add-hook 'prog-mode-hook (lambda () (show-paren-mode)))
+  (setq show-paren-style 'parenthesis)
+  (setq show-paren-highlight-openparen t)
+  (setq show-paren-when-point-inside-paren t) 
+  (setq show-paren-when-point-in-periphery nil)
+
+  (custom-set-faces
+   ;; custom-set-faces was added by Custom.
+   ;; If you edit it by hand, you could mess it up, so be careful.
+   ;; Your init file should contain only one such instance.
+   ;; If there is more than one, they won't work right.
+   '(hl-line ((t (:extend t :background "#2b363b"))))
+   '(show-paren-match ((t (:background "nil" :foreground "#F94892" :weight ultrabold :height 1.2 :width normal)))))
+#+end_src
 
 * Terminals
 
