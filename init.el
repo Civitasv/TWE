@@ -608,22 +608,26 @@
 
 (use-package lsp-ivy)
 
-(use-package emmet-mode)
+(setq-default indent-tabs-mode nil)
+
+(use-package emmet-mode
+  :bind (:map emmet-mode-keymap
+              ("C-j" . emmet-expand-line)))
 
 (use-package web-mode
   :mode ("\\.html\\'" "\\.css\\'" "\\.js\\'" "\\.ts\\'" "\\.vue\\'" "\\.json\\'" "\\.less\\'" "\\.jsx\\'")
   :hook ((web-mode . lsp-deferred)
          (web-mode . emmet-mode))
   :config
-  (setq web-mode-markup-indent-offset 2)
-  (setq web-mode-css-indent-offset 2)
-  (setq web-mode-code-indent-offset 2)
-  (setq web-mode-style-padding 1)
-  (setq web-mode-script-padding 1)
-  (setq web-mode-block-padding 0)
-  (setq web-mode-comment-style 2)
-  (setq web-mode-enable-auto-pairing t)
-  (setq web-mode-enable-css-colorization t)
+  (setq web-mode-markup-indent-offset 2
+        web-mode-css-indent-offset 2
+        web-mode-code-indent-offset 2
+        web-mode-style-padding 1
+        web-mode-script-padding 1
+        web-mode-block-padding 0
+        web-mode-comment-style 1
+        web-mode-enable-auto-pairing t
+        web-mode-enable-css-colorization t)
   :bind (:map web-mode-map
               ("C-k" . web-mode-tag-match)))
 
