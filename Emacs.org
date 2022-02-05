@@ -584,11 +584,11 @@ This section contains the basic configuration for org-mode plus the configuratio
     (setq org-log-into-drawer t)
 
     (setq org-agenda-files
-          '("/mnt/c/Users/senhu/app/workflow/project/org/Tasks.org"
-            "/mnt/c/Users/senhu/app/workflow/project/org/Habits.org"
-            "/mnt/c/Users/senhu/app/workflow/project/org/Archive.org"
-            "/mnt/c/Users/senhu/app/workflow/project/sicp/link.org"
-            "/mnt/c/Users/senhu/app/workflow/project/org/Birthdays.org"))
+          '("/usr/local/project/org/Tasks.org"
+            "/usr/local/project/org/Habits.org"
+            "/usr/local/project/org/Archive.org"
+            "/usr/local/project/sicp/link.org"
+            "/usr/local/project/org/Birthdays.org"))
 
     ;; add org-habit, which enables us to show in agenda the STYLE
     ;; which value is habit
@@ -611,7 +611,7 @@ This section contains the basic configuration for org-mode plus the configuratio
             (sequence "BACKLOG(b)" "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/!)" "HOLD(h)" "|" "COMPLETED(c)" "CANC(k@)")))
 
     (setq org-refile-targets
-          '(("/mnt/c/Users/senhu/app/workflow/project/org/Archive.org" :maxlevel . 1)))
+          '(("/usr/local/project/org/Archive.org" :maxlevel . 1)))
 
     ;; Save Org buffers after refiling!
     (advice-add 'org-refile :after 'org-save-all-org-buffers)
@@ -681,31 +681,31 @@ This section contains the basic configuration for org-mode plus the configuratio
 
     (setq org-capture-templates
           `(("t" "Tasks / Projects")
-            ("tt" "Task" entry (file+olp "/mnt/c/Users/senhu/app/workflow/project/org/Tasks.org" "Task")
+            ("tt" "Task" entry (file+olp "/usr/local/project/org/Tasks.org" "Task")
              "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)
 
             ("j" "Journal Entries")
             ("jj" "Journal" entry
-             (file+olp+datetree "/mnt/c/Users/senhu/app/workflow/project/org/Journal.org")
+             (file+olp+datetree "/usr/local/project/org/Journal.org")
              "\n* %<%I:%M %p> - Journal :journal:\n\n%?\n\n"
              :clock-in :clock-resume
              :empty-lines 1)
             ("jm" "Meeting" entry
-             (file+olp+datetree "/mnt/c/Users/senhu/app/workflow/project/org/Journal.org")
+             (file+olp+datetree "/usr/local/project/org/Journal.org")
              "* %<%I:%M %p> - %a :meetings:\n\n%?\n\n"
              :clock-in :clock-resume
              :empty-lines 1)
 
             ("s" "SICP")
-            ("sl" "External Link" table-line (file+headline "/mnt/c/Users/senhu/app/workflow/project/sicp/link.org" "Link")
+            ("sl" "External Link" table-line (file+headline "/usr/local/project/sicp/link.org" "Link")
              "| %U | %^{word or sentence} | %^{Link}|" :empty-lines 1)
 
             ("w" "Workflows")
-            ("we" "Checking Email" entry (file+olp+datetree "/mnt/c/Users/senhu/app/workflow/project/org/Journal.org")
+            ("we" "Checking Email" entry (file+olp+datetree "/usr/local/project/org/Journal.org")
              "* Checking Email :email:\n\n%?" :clock-in :clock-resume :empty-lines 1)
 
             ("m" "Metrics Capture")
-            ("mw" "Weight" table-line (file+headline "/mnt/c/Users/senhu/app/workflow/project/org/Metrics.org" "Weight")
+            ("mw" "Weight" table-line (file+headline "/usr/local/project/org/Metrics.org" "Weight")
              "| %U | %^{Weight} | %^{Notes} |" :kill-buffer t)))
 
     (setq org-src-tab-acts-natively t)
