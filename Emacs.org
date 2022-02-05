@@ -990,7 +990,7 @@ Emacs’ built in commenting functionality comment-dwim (usually bound to M-;) d
 [[https://github.com/Civitasv/pair-colorizer][pair-colorizer]] is useful in programming modes because it colorizes nested parentheses and brackets according to their nesting depth. This makes it a lot easier to visually match parentheses in Emacs Lisp code without having to count them yourself.
 
 #+begin_src emacs-lisp
-  (add-to-list 'load-path "~/.emacs.d/personal/")
+  (add-to-list 'load-path "~/.emacs.d/personal/pair-colorizer/")
   (require 'pair-colorizer)
 
   (setq pair-colorizer-dark-colors

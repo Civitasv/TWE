@@ -684,7 +684,7 @@
 (use-package evil-nerd-commenter
   :bind ("M-/" . evilnc-comment-or-uncomment-lines))
 
-(add-to-list 'load-path "~/.emacs.d/personal/")
+(add-to-list 'load-path "~/.emacs.d/personal/pair-colorizer/")
 (require 'pair-colorizer)
 
 (setq pair-colorizer-dark-colors
