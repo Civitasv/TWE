@@ -34,12 +34,12 @@
           ("https" . "127.0.0.1:7890"))))
 
 (when (and (eq system-type 'gnu/linux)
-             (string-match
-              "Linux.*Microsoft.*Linux"
-              (shell-command-to-string "uname -a")))
-    (setq
-     browse-url-generic-program "/mnt/c/Program Files/Google/Chrome/Application/chrome.exe"
-     browse-url-browser-function #'browse-url-generic))
+           (string-match
+            "Linux.*Microsoft.*Linux"
+            (shell-command-to-string "uname -a")))
+  (setq
+   browse-url-generic-program "/mnt/c/Program Files/Google/Chrome/Application/chrome.exe"
+   browse-url-browser-function #'browse-url-generic))
 ;;;
 
 ;; (defun wsl-copy-region-to-clipboard (start end)
@@ -181,7 +181,7 @@
 
 ;; NOTE: If you want to move everything out of the ~/.emacs.d folder
 ;; reliably, set `user-emacs-directory` before loading no-littering!
-;(setq user-emacs-directory "~/.cache/emacs")
+                                        ;(setq user-emacs-directory "~/.cache/emacs")
 
 (use-package no-littering)
 
@@ -258,7 +258,7 @@
 
 ;; install doom theme
 (use-package doom-themes
-  :init (load-theme 'doom-material t)
+  :init (load-theme 'doom-vibrant t)
   :config
   ;; Global settings (defaults)
   (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
@@ -684,25 +684,23 @@
 (use-package evil-nerd-commenter
   :bind ("M-/" . evilnc-comment-or-uncomment-lines))
 
-;; make parentheses more beautiful
-;; (use-package rainbow-delimiters
-;;   :hook (prog-mode . rainbow-delimiters-mode))
 (add-to-list 'load-path "~/.emacs.d/personal/")
+(require 'pair-colorizer)
 
-(add-hook 'prog-mode-hook #'rainbow-delimiters-mode)
+(setq pair-colorizer-dark-colors
+      ["#c792ea" "#f78c6c" "#c3e88d" "#89DDFF" "#bb80b3"
+       "#ffcb6b" "#82aaff" "#44b9b1" "#80cbc4"])
+(custom-set-variables '(pair-colorizer-emphasise t))
+
+(custom-set-faces
+ '(pair-colorizer-unmatched-face ((t (:foreground "#ff5370" :inverse-video t :weight bold))))
+ '(pair-colorizer-mismatched-face ((t (:inherit pair-colorizer-unmatched-face)))))
+
+(add-hook 'prog-mode-hook #'pair-colorizer-mode)
 
 (add-hook 'emacs-startup-hook (lambda () (electric-pair-mode t)))
 
-(custom-set-variables '(rainbow-delimiters-emphasise t))
 (custom-set-faces
- '(rainbow-delimiters-base-face ((t (:inherit default))))
- '(rainbow-delimiters-base-error-face ((t (:inherit rainbow-delimiters-base-face :foreground "#ff5370"))))
- '(rainbow-delimiters-unmatched-face ((t (:foreground "#ff5370" :inverse-video t :weight bold))))
- '(rainbow-delimiters-mismatched-face ((t (:inherit rainbow-delimiters-unmatched-face))))
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
  '(hl-line ((t (:extend t :background "#2b363b")))))
 
 (when (string-equal system-type "gnu/linux")  ; Linux

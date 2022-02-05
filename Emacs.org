@@ -1,5 +1,5 @@
 * Emacs Configuration
-:PROPERTIES:qqq
+:PROPERTIES:
 :ID:       81dcbf2a-a270-4194-a49e-b8bddace3af9
 :END:
 
@@ -10,8 +10,8 @@
 Emacs Is A Way To Think!
 
 I use Emacs maily to:
-  - write blogs
-  - web development
+- write blogs
+- web development
 
 For java, I'll still use Idea.
 
@@ -54,19 +54,19 @@ And I disable emacs to create backup and autosave files.
 * Performance
 
 #+begin_src emacs-lisp
-(if (not (display-graphic-p))
-    (progn
-      ;; 增大垃圾回收的阈值，提高整体性能（内存换效率）
-      (setq gc-cons-threshold (* 8192 8192 100))
-      ;; 增大同LSP服务器交互时的读取文件的大小
-      (setq read-process-output-max (* 1024 1024 256)) ;; 128MB
-      ))
+  (if (not (display-graphic-p))
+      (progn
+        ;; 增大垃圾回收的阈值，提高整体性能（内存换效率）
+        (setq gc-cons-threshold (* 8192 8192 100))
+        ;; 增大同LSP服务器交互时的读取文件的大小
+        (setq read-process-output-max (* 1024 1024 256)) ;; 128MB
+        ))
 #+end_src
 
 * Encoding
 
 #+begin_src emacs-lisp
-(set-language-environment "UTF-8")
+  (set-language-environment "UTF-8")
 #+end_src
 
 * Proxy Set
@@ -104,7 +104,7 @@ Don't know why, but I finally fix it.
     (setq
      browse-url-generic-program "/mnt/c/Program Files/Google/Chrome/Application/chrome.exe"
      browse-url-browser-function #'browse-url-generic))
-;;;
+  ;;;
 #+end_src
 
 ** Copy/Paste
@@ -112,30 +112,30 @@ Don't know why, but I finally fix it.
 With WSL2, you can copy and paste from wsl and windows directly, so it's no need to use the lisp follows.
 
 #+begin_src emacs-lisp
-;; (defun wsl-copy-region-to-clipboard (start end)
-;;   "Copy region to Windows clipboard."
-;;   (interactive "r")
-;;   (call-process-region start end "clip.exe" nil 0))
+  ;; (defun wsl-copy-region-to-clipboard (start end)
+  ;;   "Copy region to Windows clipboard."
+  ;;   (interactive "r")
+  ;;   (call-process-region start end "clip.exe" nil 0))
 
-;; (defun wsl-cut-region-to-clipboard (start end)
-;;   "Cut region to Windows clipboard."
-;;   (interactive "r")
-;;   (call-process-region start end "clip.exe" nil 0)
-;;   (kill-region start end))
+  ;; (defun wsl-cut-region-to-clipboard (start end)
+  ;;   "Cut region to Windows clipboard."
+  ;;   (interactive "r")
+  ;;   (call-process-region start end "clip.exe" nil 0)
+  ;;   (kill-region start end))
 
-;; (defun wsl-clipboard-to-string ()
-;;   "Return Windows clipboard as string"
-;;   (let ((coding-system-for-read 'dos))
-;;     (substring
-;;      (shell-command-to-string
-;;       "powershell.exe -Command Get-Clipboard") 0 -1)))
+  ;; (defun wsl-clipboard-to-string ()
+  ;;   "Return Windows clipboard as string"
+  ;;   (let ((coding-system-for-read 'dos))
+  ;;     (substring
+  ;;      (shell-command-to-string
+  ;;       "powershell.exe -Command Get-Clipboard") 0 -1)))
 
-;; (defun wsl-paste-from-clipboard (arg)
-;;   "Insert Windows clipboard at point. With prefix ARG, also add to kill-ring."
-;;   (interactive "p")
-;;   (let ((clip (wsl-clipboard-to-string)))
-;;     (insert clip)
-;;     (if arg (kill-new clip))))
+  ;; (defun wsl-paste-from-clipboard (arg)
+  ;;   "Insert Windows clipboard at point. With prefix ARG, also add to kill-ring."
+  ;;   (interactive "p")
+  ;;   (let ((clip (wsl-clipboard-to-string)))
+  ;;     (insert clip)
+  ;;     (if arg (kill-new clip))))
 #+end_src
 
 ** Chinese Input Method
@@ -155,7 +155,7 @@ With WSL2, you can copy and paste from wsl and windows directly, so it's no need
           '("C-f" "C-b" "C-n" "C-p" "C-g" "<left>" "<right>" "<up>" "<down>" "<prior>" "<next>" "<delete>"))
     (setq rime-cursor "|")
     (set-face-attribute 'rime-default-face nil :foreground "#839496" :background "#073642"))
-    #+end_src
+#+end_src
 
 * UI Config
 
@@ -306,7 +306,7 @@ We use the [[https://github.com/emacscollective/no-littering/blob/master/no-litt
 
   ;; NOTE: If you want to move everything out of the ~/.emacs.d folder
   ;; reliably, set `user-emacs-directory` before loading no-littering!
-  ;(setq user-emacs-directory "~/.cache/emacs")
+                                          ;(setq user-emacs-directory "~/.cache/emacs")
 
   (use-package no-littering)
 
@@ -403,7 +403,7 @@ Hydra is best to make keybindings that have same prefix.
 #+begin_src emacs-lisp
   ;; install doom theme
   (use-package doom-themes
-    :init (load-theme 'doom-material t)
+    :init (load-theme 'doom-vibrant t)
     :config
     ;; Global settings (defaults)
     (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
@@ -699,7 +699,7 @@ This section contains the basic configuration for org-mode plus the configuratio
             ("s" "SICP")
             ("sl" "External Link" table-line (file+headline "/mnt/c/Users/senhu/app/workflow/project/sicp/link.org" "Link")
              "| %U | %^{word or sentence} | %^{Link}|" :empty-lines 1)
-	  
+
             ("w" "Workflows")
             ("we" "Checking Email" entry (file+olp+datetree "/mnt/c/Users/senhu/app/workflow/project/org/Journal.org")
              "* Checking Email :email:\n\n%?" :clock-in :clock-resume :empty-lines 1)
@@ -985,17 +985,24 @@ Emacs’ built in commenting functionality comment-dwim (usually bound to M-;) d
     :bind ("M-/" . evilnc-comment-or-uncomment-lines))
 #+end_src
 
-** Rainbow Delimiters
+** Pair Colorizer
 
-[[https://github.com/Fanael/rainbow-delimiters][rainbow-delimiters]] is useful in programming modes because it colorizes nested parentheses and brackets according to their nesting depth. This makes it a lot easier to visually match parentheses in Emacs Lisp code without having to count them yourself.
+[[https://github.com/Civitasv/pair-colorizer][pair-colorizer]] is useful in programming modes because it colorizes nested parentheses and brackets according to their nesting depth. This makes it a lot easier to visually match parentheses in Emacs Lisp code without having to count them yourself.
 
 #+begin_src emacs-lisp
-  ;; make parentheses more beautiful
-  ;; (use-package rainbow-delimiters
-  ;;   :hook (prog-mode . rainbow-delimiters-mode))
   (add-to-list 'load-path "~/.emacs.d/personal/")
+  (require 'pair-colorizer)
 
-  (add-hook 'prog-mode-hook #'rainbow-delimiters-mode)
+  (setq pair-colorizer-dark-colors
+        ["#c792ea" "#f78c6c" "#c3e88d" "#89DDFF" "#bb80b3"
+         "#ffcb6b" "#82aaff" "#44b9b1" "#80cbc4"])
+  (custom-set-variables '(pair-colorizer-emphasise t))
+
+  (custom-set-faces
+   '(pair-colorizer-unmatched-face ((t (:foreground "#ff5370" :inverse-video t :weight bold))))
+   '(pair-colorizer-mismatched-face ((t (:inherit pair-colorizer-unmatched-face)))))
+
+  (add-hook 'prog-mode-hook #'pair-colorizer-mode)
 #+end_src
 
 ** Bracket Auto Complete
@@ -1004,21 +1011,10 @@ Emacs’ built in commenting functionality comment-dwim (usually bound to M-;) d
   (add-hook 'emacs-startup-hook (lambda () (electric-pair-mode t)))
 #+end_src
 
-*** Bracket Hover
-
-Also, whenever I hover on or inside the bracket, I want it be highlight.
+** Highlight Current Line
 
 #+begin_src emacs-lisp
-  (custom-set-variables '(rainbow-delimiters-emphasise t))
   (custom-set-faces
-   '(rainbow-delimiters-base-face ((t (:inherit default))))
-   '(rainbow-delimiters-base-error-face ((t (:inherit rainbow-delimiters-base-face :foreground "#ff5370"))))
-   '(rainbow-delimiters-unmatched-face ((t (:foreground "#ff5370" :inverse-video t :weight bold))))
-   '(rainbow-delimiters-mismatched-face ((t (:inherit rainbow-delimiters-unmatched-face))))
-   ;; custom-set-faces was added by Custom.
-   ;; If you edit it by hand, you could mess it up, so be careful.
-   ;; Your init file should contain only one such instance.
-   ;; If there is more than one, they won't work right.
    '(hl-line ((t (:extend t :background "#2b363b")))))
 #+end_src
 
@@ -1072,9 +1068,9 @@ ATTENTION: When you're in terminal mode, any regular ==C-x whatever== will becom
 One advantage of =shell-mode= on Windows is that it's the only way to run =cmd.exe=, PowerShell, Git Bash, etc from within Emacs.  Here's an example of how you would set up =shell-mode= to run PowerShell on Windows:
 
 #+begin_src emacs-lisp
-(when (eq system-type 'windows-nt)
-  (setq explicit-shell-file-name "powershell.exe")
-  (setq explicit-powershell.exe-args '()))
+  (when (eq system-type 'windows-nt)
+    (setq explicit-shell-file-name "powershell.exe")
+    (setq explicit-powershell.exe-args '()))
 #+end_src
 
 ** eshell
