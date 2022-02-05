@@ -97,6 +97,7 @@
 
 (column-number-mode)
 (global-display-line-numbers-mode t)
+(setq display-line-numbers-type 'relative)
 
 ;; Disable line numbers for some modes, dolist is used to loop
 (dolist (mode '(org-mode-hook
