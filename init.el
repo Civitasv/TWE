@@ -193,7 +193,7 @@
 ;; Make ESC quit prompts
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 ;; bing C-M-J to switch buffer
-(global-set-key (kbd "C-M-j") 'ido-switch-buffer)
+(global-set-key (kbd "C-M-j") 'counsel-switch-buffer)
 
 ;; used to make your own keymaps
 (use-package general
@@ -314,7 +314,7 @@
 ;; counsel: a collection of ivy-enhanced versions of common Emacs commands
 (use-package counsel
   :bind (("M-x" . counsel-M-x)
-         ("C-x b" . ido-switch-buffer)
+         ("C-x b" . counsel-switch-buffer)
          ("C-x C-f" . counsel-find-file)
          :map minibuffer-local-map
          ("C-r" . 'counsel-minibuffer-history))
@@ -663,8 +663,8 @@
   :bind-keymap
   ("C-c p" . projectile-command-map)
   :init
-  (when (file-directory-p "/mnt/c/Users/senhu/app/workflow/project")
-    (setq projectile-project-search-path '("/mnt/c/Users/senhu/app/workflow/project")))
+  (when (file-directory-p "~/project")
+    (setq projectile-project-search-path '("~/project")))
   (setq projectile-switch-project-action #'projectile-dired))
 
 (use-package counsel-projectile
