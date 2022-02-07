@@ -35,12 +35,11 @@
 
 (when (and (eq system-type 'gnu/linux)
            (string-match
-            "Linux.*Microsoft.*Linux"
+            "Linux.*microsoft.*Linux"
             (shell-command-to-string "uname -a")))
   (setq
-   browse-url-generic-program "/mnt/c/Program Files/Google/Chrome/Application/chrome.exe"
+   browse-url-generic-program "google-chrome"
    browse-url-browser-function #'browse-url-generic))
-;;;
 
 ;; (defun wsl-copy-region-to-clipboard (start end)
 ;;   "Copy region to Windows clipboard."
@@ -194,7 +193,7 @@
 ;; Make ESC quit prompts
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 ;; bing C-M-J to switch buffer
-(global-set-key (kbd "C-M-j") 'counsel-switch-buffer)
+(global-set-key (kbd "C-M-j") 'ido-switch-buffer)
 
 ;; used to make your own keymaps
 (use-package general
@@ -315,7 +314,7 @@
 ;; counsel: a collection of ivy-enhanced versions of common Emacs commands
 (use-package counsel
   :bind (("M-x" . counsel-M-x)
-         ("C-x b" . counsel-ibuffer)
+         ("C-x b" . ido-switch-buffer)
          ("C-x C-f" . counsel-find-file)
          :map minibuffer-local-map
          ("C-r" . 'counsel-minibuffer-history))

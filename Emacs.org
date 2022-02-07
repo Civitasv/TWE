@@ -99,12 +99,11 @@ Don't know why, but I finally fix it.
 #+begin_src emacs-lisp
   (when (and (eq system-type 'gnu/linux)
              (string-match
-              "Linux.*Microsoft.*Linux"
+              "Linux.*microsoft.*Linux"
               (shell-command-to-string "uname -a")))
     (setq
-     browse-url-generic-program "/mnt/c/Program Files/Google/Chrome/Application/chrome.exe"
+     browse-url-generic-program "google-chrome"
      browse-url-browser-function #'browse-url-generic))
-  ;;;
 #+end_src
 
 ** Copy/Paste
@@ -331,7 +330,7 @@ Hydra is best to make keybindings that have same prefix.
   ;; Make ESC quit prompts
   (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
   ;; bing C-M-J to switch buffer
-  (global-set-key (kbd "C-M-j") 'counsel-switch-buffer)
+  (global-set-key (kbd "C-M-j") 'ido-switch-buffer)
 
   ;; used to make your own keymaps
   (use-package general
@@ -481,7 +480,7 @@ Hydra is best to make keybindings that have same prefix.
   ;; counsel: a collection of ivy-enhanced versions of common Emacs commands
   (use-package counsel
     :bind (("M-x" . counsel-M-x)
-           ("C-x b" . counsel-ibuffer)
+           ("C-x b" . ido-switch-buffer)
            ("C-x C-f" . counsel-find-file)
            :map minibuffer-local-map
            ("C-r" . 'counsel-minibuffer-history))
@@ -1212,3 +1211,4 @@ Dired is a built-in file manager for Emacs that does some pretty amazing things!
     (evil-collection-define-key 'normal 'dired-mode-map
       "H" 'dired-hide-dotfiles-mode))
 #+end_src
+
