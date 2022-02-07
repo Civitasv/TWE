@@ -210,6 +210,7 @@
     "d" '(lsp-find-definition :which-key "find definition")
     "f" '(lsp-format-buffer :which-key "format file")
     "a" '(hydra-agenda/body :which-key "org agenda")
+    "v" '(org-latex-preview :which-key "latex preview")
     "c" '(counsel-org-capture :which-key "org capture")
     "s" '(org-insert-subheading :which-key "insert subheading")))
 
@@ -380,7 +381,6 @@
   (define-key org-mode-map
     (kbd "C-i") #'civ/org-code-automatically-format))
 
-
 ;; use org to organize your life
 (use-package org
   :hook (org-mode . civ/org-mode-setup)
@@ -392,11 +392,11 @@
   (setq org-log-into-drawer t)
 
   (setq org-agenda-files
-        '("/usr/local/project/org/Tasks.org"
-          "/usr/local/project/org/Habits.org"
-          "/usr/local/project/org/Archive.org"
-          "/usr/local/project/sicp/link.org"
-          "/usr/local/project/org/Birthdays.org"))
+        '("~/project/org/Tasks.org"
+          "~/project/org/Habits.org"
+          "~/project/org/Archive.org"
+          "~/project/sicp/link.org"
+          "~/project/org/Birthdays.org"))
 
   ;; add org-habit, which enables us to show in agenda the STYLE
   ;; which value is habit
@@ -419,7 +419,7 @@
           (sequence "BACKLOG(b)" "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/!)" "HOLD(h)" "|" "COMPLETED(c)" "CANC(k@)")))
 
   (setq org-refile-targets
-        '(("/usr/local/project/org/Archive.org" :maxlevel . 1)))
+        '(("~/project/org/Archive.org" :maxlevel . 1)))
 
   ;; Save Org buffers after refiling!
   (advice-add 'org-refile :after 'org-save-all-org-buffers)
@@ -489,31 +489,31 @@
 
   (setq org-capture-templates
         `(("t" "Tasks / Projects")
-          ("tt" "Task" entry (file+olp "/usr/local/project/org/Tasks.org" "Task")
+          ("tt" "Task" entry (file+olp "~/project/org/Tasks.org" "Task")
            "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)
 
           ("j" "Journal Entries")
           ("jj" "Journal" entry
-           (file+olp+datetree "/usr/local/project/org/Journal.org")
+           (file+olp+datetree "~/project/org/Journal.org")
            "\n* %<%I:%M %p> - Journal :journal:\n\n%?\n\n"
            :clock-in :clock-resume
            :empty-lines 1)
           ("jm" "Meeting" entry
-           (file+olp+datetree "/usr/local/project/org/Journal.org")
+           (file+olp+datetree "~/project/org/Journal.org")
            "* %<%I:%M %p> - %a :meetings:\n\n%?\n\n"
            :clock-in :clock-resume
            :empty-lines 1)
 
           ("s" "SICP")
-          ("sl" "External Link" table-line (file+headline "/usr/local/project/sicp/link.org" "Link")
+          ("sl" "External Link" table-line (file+headline "~/project/sicp/link.org" "Link")
            "| %U | %^{word or sentence} | %^{Link}|" :empty-lines 1)
 
           ("w" "Workflows")
-          ("we" "Checking Email" entry (file+olp+datetree "/usr/local/project/org/Journal.org")
+          ("we" "Checking Email" entry (file+olp+datetree "~/project/org/Journal.org")
            "* Checking Email :email:\n\n%?" :clock-in :clock-resume :empty-lines 1)
 
           ("m" "Metrics Capture")
-          ("mw" "Weight" table-line (file+headline "/usr/local/project/org/Metrics.org" "Weight")
+          ("mw" "Weight" table-line (file+headline "~/project/org/Metrics.org" "Weight")
            "| %U | %^{Weight} | %^{Notes} |" :kill-buffer t)))
 
   (setq org-src-tab-acts-natively t)
@@ -543,6 +543,14 @@
       (org-babel-tangle))))
 
 (add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'efs/org-babel-tangle-config)))
+
+(setq org-latex-create-formula-image-program 'dvipng)
+(setq org-latex-listings 'minted)
+(require 'ox-latex)
+(add-to-list 'org-latex-packages-alist '("" "minted"))
+(add-to-list 'org-latex-packages-alist '("" "listings"))
+(add-to-list 'org-latex-packages-alist '("" "color"))
+(setq org-format-latex-options (plist-put org-format-latex-options :scale 1.8))
 
 (add-to-list 'exec-path "/root/.nvm/versions/node/v17.3.1/bin")
 
