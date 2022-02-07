@@ -1211,4 +1211,3 @@ Dired is a built-in file manager for Emacs that does some pretty amazing things!
     (evil-collection-define-key 'normal 'dired-mode-map
       "H" 'dired-hide-dotfiles-mode))
 #+end_src
-
