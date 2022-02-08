@@ -395,7 +395,6 @@
         '("~/project/org/Tasks.org"
           "~/project/org/Habits.org"
           "~/project/org/Archive.org"
-          "~/project/sicp/link.org"
           "~/project/org/Birthdays.org"))
 
   ;; add org-habit, which enables us to show in agenda the STYLE
