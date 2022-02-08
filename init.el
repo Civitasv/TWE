@@ -66,20 +66,24 @@
 ;;     (insert clip)
 ;;     (if arg (kill-new clip))))
 
-(use-package rime
-  :custom
-  (default-input-method "rime") 
-  (rime-show-candidate 'posframe)
-  (rime-posframe-properties
-   (list :background-color "#073642"
-         :foreground-color "#839496"
-         :internal-border-width 1))
-  :config
-  (setq rime-inline-ascii-trigger 'shift-l)
-  (setq rime-translate-keybindings
-        '("C-f" "C-b" "C-n" "C-p" "C-g" "<left>" "<right>" "<up>" "<down>" "<prior>" "<next>" "<delete>"))
-  (setq rime-cursor "|")
-  (set-face-attribute 'rime-default-face nil :foreground "#839496" :background "#073642"))
+(when (and (eq system-type 'gnu/linux)
+           (string-match
+            "Linux.*microsoft.*Linux"
+            (shell-command-to-string "uname -a")))
+  (use-package rime
+    :custom
+    (default-input-method "rime") 
+    (rime-show-candidate 'posframe)
+    (rime-posframe-properties
+     (list :background-color "#073642"
+           :foreground-color "#839496"
+           :internal-border-width 1))
+    :config
+    (setq rime-inline-ascii-trigger 'shift-l)
+    (setq rime-translate-keybindings
+          '("C-f" "C-b" "C-n" "C-p" "C-g" "<left>" "<right>" "<up>" "<down>" "<prior>" "<next>" "<delete>"))
+    (setq rime-cursor "|")
+    (set-face-attribute 'rime-default-face nil :foreground "#839496" :background "#073642")))
 
 (defvar civ/default-font-size 160)
 (defvar civ/default-variable-font-size 160)
