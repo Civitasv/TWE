@@ -28,10 +28,11 @@
 
 (set-language-environment "UTF-8")
 
-(when (string-equal system-type "windows-nt") ; Microsoft Windows
+(when (or (string-equal system-type "windows-nt") ; Microsoft Windows
+          (string-equal system-type "gnu/linux"))
   (setq url-proxy-services
-        '(("http"  . "127.0.0.1:7890")
-          ("https" . "127.0.0.1:7890"))))
+        '(("http"  . "127.0.0.1:51837")
+          ("https" . "127.0.0.1:51837"))))
 
 (when (and (eq system-type 'gnu/linux)
            (string-match
@@ -103,8 +104,7 @@
 (setq display-line-numbers-type 'relative)
 
 ;; Disable line numbers for some modes, dolist is used to loop
-(dolist (mode '(org-mode-hook
-                term-mode-hook
+(dolist (mode '(term-mode-hook
                 shell-mode-hook
                 treemacs-mode-hook
                 eshell-mode-hook))
@@ -419,7 +419,7 @@
 
   (setq org-todo-keywords
         '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
-          (sequence "BACKLOG(b)" "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/!)" "HOLD(h)" "|" "COMPLETED(c)" "CANC(k@)")))
+          (sequence "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/!)" "|" "COMPLETED(c)" "CANCEL(k@)")))
 
   (setq org-refile-targets
         '(("~/project/org/Archive.org" :maxlevel . 1)))
@@ -466,15 +466,8 @@
            ((todo "WAIT"
                   ((org-agenda-overriding-header "Waiting on External")
                    (org-agenda-files org-agenda-files)))
-            (todo "REVIEW"
-                  ((org-agenda-overriding-header "In Review")
-                   (org-agenda-files org-agenda-files)))
             (todo "PLAN"
                   ((org-agenda-overriding-header "In Planning")
-                   (org-agenda-todo-list-sublevels nil)
-                   (org-agenda-files org-agenda-files)))
-            (todo "BACKLOG"
-                  ((org-agenda-overriding-header "Project Backlog")
                    (org-agenda-todo-list-sublevels nil)
                    (org-agenda-files org-agenda-files)))
             (todo "READY"
@@ -483,10 +476,13 @@
             (todo "ACTIVE"
                   ((org-agenda-overriding-header "Active Projects")
                    (org-agenda-files org-agenda-files)))
+            (todo "REVIEW"
+                  ((org-agenda-overriding-header "In Review")
+                   (org-agenda-files org-agenda-files)))
             (todo "COMPLETED"
                   ((org-agenda-overriding-header "Completed Projects")
                    (org-agenda-files org-agenda-files)))
-            (todo "CANC"
+            (todo "CANCEL"
                   ((org-agenda-overriding-header "Cancelled Projects")
                    (org-agenda-files org-agenda-files)))))))
 
@@ -650,6 +646,12 @@
   :hook (python-mode . (lambda ()
                          (require 'lsp-python-ms)
                          (lsp-deferred))))  ; or lsp-deferred
+
+(add-hook 'c-mode-hook  #'lsp-deferred)
+(add-hook 'c++-mode-hook #'lsp-deferred)
+
+(use-package yaml-mode
+  :hook ((web-mode . lsp-deferred)))
 
 (use-package company
   :after lsp-mode

@@ -72,10 +72,11 @@ And I disable emacs to create backup and autosave files.
 * Proxy Set
 
 #+begin_src emacs-lisp
-  (when (string-equal system-type "windows-nt") ; Microsoft Windows
+  (when (or (string-equal system-type "windows-nt") ; Microsoft Windows
+            (string-equal system-type "gnu/linux"))
     (setq url-proxy-services
-          '(("http"  . "127.0.0.1:7890")
-            ("https" . "127.0.0.1:7890"))))
+          '(("http"  . "127.0.0.1:51837")
+            ("https" . "127.0.0.1:51837"))))
 #+end_src
 
 * WSL Configuration
@@ -195,8 +196,7 @@ For the modes except org-mode, term-mode and eshell-mode, I think showing the li
   (setq display-line-numbers-type 'relative)
 
   ;; Disable line numbers for some modes, dolist is used to loop
-  (dolist (mode '(org-mode-hook
-                  term-mode-hook
+  (dolist (mode '(term-mode-hook
                   shell-mode-hook
                   treemacs-mode-hook
                   eshell-mode-hook))
@@ -611,7 +611,7 @@ This section contains the basic configuration for org-mode plus the configuratio
 
     (setq org-todo-keywords
           '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
-            (sequence "BACKLOG(b)" "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/!)" "HOLD(h)" "|" "COMPLETED(c)" "CANC(k@)")))
+            (sequence "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/!)" "|" "COMPLETED(c)" "CANCEL(k@)")))
 
     (setq org-refile-targets
           '(("~/project/org/Archive.org" :maxlevel . 1)))
@@ -658,15 +658,8 @@ This section contains the basic configuration for org-mode plus the configuratio
              ((todo "WAIT"
                     ((org-agenda-overriding-header "Waiting on External")
                      (org-agenda-files org-agenda-files)))
-              (todo "REVIEW"
-                    ((org-agenda-overriding-header "In Review")
-                     (org-agenda-files org-agenda-files)))
               (todo "PLAN"
                     ((org-agenda-overriding-header "In Planning")
-                     (org-agenda-todo-list-sublevels nil)
-                     (org-agenda-files org-agenda-files)))
-              (todo "BACKLOG"
-                    ((org-agenda-overriding-header "Project Backlog")
                      (org-agenda-todo-list-sublevels nil)
                      (org-agenda-files org-agenda-files)))
               (todo "READY"
@@ -675,10 +668,13 @@ This section contains the basic configuration for org-mode plus the configuratio
               (todo "ACTIVE"
                     ((org-agenda-overriding-header "Active Projects")
                      (org-agenda-files org-agenda-files)))
+              (todo "REVIEW"
+                    ((org-agenda-overriding-header "In Review")
+                     (org-agenda-files org-agenda-files)))
               (todo "COMPLETED"
                     ((org-agenda-overriding-header "Completed Projects")
                      (org-agenda-files org-agenda-files)))
-              (todo "CANC"
+              (todo "CANCEL"
                     ((org-agenda-overriding-header "Cancelled Projects")
                      (org-agenda-files org-agenda-files)))))))
 
@@ -926,6 +922,20 @@ There is still a bug in this configuration, maybe my fault, maybe the bug in =we
                            (lsp-deferred))))  ; or lsp-deferred
 #+end_src
 
+*** C/C++
+
+#+begin_src emacs-lisp
+  (add-hook 'c-mode-hook  #'lsp-deferred)
+  (add-hook 'c++-mode-hook #'lsp-deferred)
+#+end_src
+
+*** YAML
+
+#+begin_src emacs-lisp
+  (use-package yaml-mode
+    :hook ((web-mode . lsp-deferred)))
+#+end_src
+
 *** Company Mode
 
 [[http://company-mode.github.io/][Company Mode]] provides a nicer in-buffer completion interface than completion-at-point which is more reminiscent of what you would expect from an IDE. We add a simple configuration to make the keybindings a little more useful (TAB now completes the selection and initiates completion at the current location if needed).
@@ -935,7 +945,6 @@ We also use [[https://github.com/sebastiencs/company-box][company-box]] to furth
 I often want to go to a new line when I touch =<return>=, buf default it will triger =company-complete-selection=, so I just change it to =nil=, and use =<tab= to =select= instead.
 
 #+begin_src emacs-lisp
-
   (use-package company
     :after lsp-mode
     :hook (lsp-mode . company-mode)
@@ -951,7 +960,6 @@ I often want to go to a new line when I touch =<return>=, buf default it will tr
 
   (use-package company-box
     :hook (company-mode . company-box-mode))
-
 #+end_src
 
 ** Projectile
