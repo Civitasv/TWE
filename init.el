@@ -205,15 +205,18 @@
   :config
   (general-create-definer civitasv/leader-keys
     :keymaps '(normal insert visual emacs)
-    :prefix "SPC"
-    :global-prefix "C-SPC")
+    :prefix ","
+    :global-prefix "C-,")
 
   (civitasv/leader-keys
+    "a" '(hydra-agenda/body :which-key "org agenda")
     "t" '(counsel-load-theme :which-key "choose theme")
     "z" '(hydra-text-scale/body :which-key "scale text")
     "d" '(lsp-find-definition :which-key "find definition")
+    "h" '(lsp-describe-thing-at-point :which-key "help")
+    "r" '(lsp-find-references :which-key "find references")
+    "e" '(flymake-show-diagnostics-buffer :which-key "show errors")
     "f" '(lsp-format-buffer :which-key "format file")
-    "a" '(hydra-agenda/body :which-key "org agenda")
     "v" '(org-latex-preview :which-key "latex preview")
     "c" '(counsel-org-capture :which-key "org capture")
     "s" '(org-insert-subheading :which-key "insert subheading")))
@@ -575,14 +578,17 @@
 
 (use-package lsp-ui
   :hook (lsp-mode . lsp-ui-mode)
-  :custom
-  (lsp-ui-sideline-show-diagnostics t)
-  (lsp-ui-sideline-show-hover nil)
-  (lsp-ui-sideline-show-code-actions nil)
-  (lsp-ui-doc-enable t)
-  (lsp-ui-doc-position 'at-point)
-  (lsp-ui-doc-show-with-cursor nil)
-  (lsp-ui-doc-show-with-mouse t))
+  :commands lsp-ui-mode
+  :config
+  (setq lsp-ui-sideline-enable t
+        lsp-ui-sideline-show-diagnostics t
+        lsp-ui-sideline-show-hover t
+        lsp-ui-sideline-show-code-actions nil
+        lsp-lens-enable t
+        lsp-ui-doc-enable t
+        lsp-ui-doc-position 'at-point
+        lsp-ui-doc-show-with-cursor nil
+        lsp-ui-doc-show-with-mouse t))
 
 (use-package treemacs
   :defer t
@@ -638,20 +644,36 @@
   :bind (:map web-mode-map
               ("C-k" . web-mode-tag-match)))
 
-(add-to-list 'exec-path "/root/anaconda3/bin")
-(setq python-shell-interpreter "/root/anaconda3/bin/python")
-(use-package lsp-python-ms
-  :ensure t
-  :init (setq lsp-python-ms-auto-install-server t)
-  :hook (python-mode . (lambda ()
-                         (require 'lsp-python-ms)
-                         (lsp-deferred))))  ; or lsp-deferred
+;; (add-to-list 'exec-path "/root/anaconda3/bin")
+;; (setq python-shell-interpreter "/root/anaconda3/bin/python")
+(use-package python-mode
+  :hook (python-mode . lsp-deferred))
+
+(use-package pyvenv
+  :config
+  (pyvenv-mode 1))
 
 (add-hook 'c-mode-hook  #'lsp-deferred)
 (add-hook 'c++-mode-hook #'lsp-deferred)
 
 (use-package yaml-mode
   :hook ((web-mode . lsp-deferred)))
+
+(use-package dap-mode
+  :custom
+  (dap-auto-configure-features '(sessions locals tooltip controls))
+  (dap-python-debugger 'debugpy)
+  :config
+  (require 'dap-node)
+  (dap-node-setup)
+  (require 'dap-cpptools)
+  (dap-cpptools-setup)
+  (require 'dap-python)
+  ;; Bind `C-c l d` to `dap-hydra` for easy access
+  (general-define-key
+   :keymaps 'lsp-mode-map
+   :prefix lsp-keymap-prefix
+   "d" '(dap-hydra t :wk "debugger")))
 
 (use-package company
   :after lsp-mode
