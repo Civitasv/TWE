@@ -5,6 +5,8 @@
 
 #+PROPERTY: header-args:emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
 
+MAKE IT BETTER AND BETTER, RATHER MAKE IT BEST!
+
 * Basic 
 
 Emacs Is A Way To Think!
