@@ -560,7 +560,9 @@
   (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
   (lsp-headerline-breadcrumb-mode))
 
-(use-package yasnippet)
+(use-package yasnippet
+  :config
+  (yas-global-mode 1))
 
 (use-package lsp-mode
   :commands (lsp lsp-deferred)
