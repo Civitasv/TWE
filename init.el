@@ -576,7 +576,7 @@
   (lsp-enable-which-key-integration t)
   :custom
   (lsp-eldoc-enable-hover t)
-  (lsp-eldoc-render-all t))
+  (lsp-eldoc-render-all nil))
 
 (use-package lsp-ui
   :hook (lsp-mode . lsp-ui-mode)
@@ -653,7 +653,14 @@
 
 (use-package pyvenv
   :config
-  (pyvenv-mode 1))
+  (pyvenv-mode 1)
+  ;; Set correct Python interpreter
+  (setq pyvenv-post-activate-hooks
+        (list (lambda ()
+                (setq python-shell-interpreter (concat pyvenv-virtual-env "/usr/bin/python3")))))
+  (setq pyvenv-post-deactivate-hooks
+        (list (lambda ()
+                (setq python-shell-interpreter "python3")))))
 
 (add-hook 'c-mode-hook  #'lsp-deferred)
 (add-hook 'c++-mode-hook #'lsp-deferred)

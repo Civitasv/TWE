@@ -809,7 +809,7 @@ The steps of =lsp-mode= is:
     (lsp-enable-which-key-integration t)
     :custom
     (lsp-eldoc-enable-hover t)
-    (lsp-eldoc-render-all t))
+    (lsp-eldoc-render-all nil))
 #+end_src
 
 **** lsp-ui
@@ -933,7 +933,14 @@ You can use the pyvenv package to use virtualenv environments in Emacs. The pyve
 #+begin_src emacs-lisp
   (use-package pyvenv
     :config
-    (pyvenv-mode 1))
+    (pyvenv-mode 1)
+    ;; Set correct Python interpreter
+    (setq pyvenv-post-activate-hooks
+          (list (lambda ()
+                  (setq python-shell-interpreter (concat pyvenv-virtual-env "/usr/bin/python3")))))
+    (setq pyvenv-post-deactivate-hooks
+          (list (lambda ()
+                  (setq python-shell-interpreter "python3")))))
 #+end_src
 *** C/C++
 
