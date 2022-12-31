@@ -341,107 +341,108 @@ I prefer to use Vi-like editing command, so I use the [[https://evil.readthedocs
 [[https://github.com/noctuid/general.el][general.el]] is used to create keybindings easily.
 
 #+begin_src emacs-lisp
-    ;; Make ESC quit prompts
-    (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
+  ;; Make ESC quit prompts
+  (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 
-    (use-package hydra)
+  (use-package hydra)
 
-    ;; A hydra example:
-    ;; When `hydra-text-scale/body` is invoked,
-    ;; then j, k, f will appear, press j to increase text, press k to decrease text, presee f to finish.
-    (defhydra hydra-text-scale (:timeout 4)
-      "scale text"
-      ("j" text-scale-increase "in")
-      ("k" text-scale-decrease "out")
-      ("f" nil "finished" :exit t))
+  ;; A hydra example:
+  ;; When `hydra-text-scale/body` is invoked,
+  ;; then j, k, f will appear, press j to increase text, press k to decrease text, presee f to finish.
+  (defhydra hydra-text-scale (:timeout 4)
+    "scale text"
+    ("j" text-scale-increase "in")
+    ("k" text-scale-decrease "out")
+    ("f" nil "finished" :exit t))
 
-    (defhydra hydra-agenda (:timeout 4)
-      "org agenda"
-      ("a" org-agenda "show agenda")
-      ("t" org-set-tags-command "add tags")
-      ("f" nil "finished" :exit t))
+  (defhydra hydra-agenda (:timeout 4)
+    "org agenda"
+    ("a" org-agenda "show agenda")
+    ("t" org-set-tags-command "add tags")
+    ("f" nil "finished" :exit t))
 
-    (use-package undo-tree
-      :hook (after-init . global-undo-tree-mode))
+  (use-package undo-tree
+    :hook (after-init . global-undo-tree-mode))
 
-    ;; vim mode
-    ;; N, I, V, R, 0, M, E state
-    (use-package evil
-      :init
-      (setq evil-want-integration t)
-      (setq evil-want-keybinding nil)
-      (setq
-       ;; Keybindings
-       evil-toggle-key "C-z"   ; use C-z to change to and from Emacs state
-       evil-disable-insert-state-bindings nil
-       evil-want-C-w-delete t  ; delete a word in insert state
-       evil-want-C-u-scroll t  ; scroll up
-       evil-want-C-d-scroll t  ; scroll down
-       evil-want-C-i-jump nil
-       ;; Search
-       evil-search-module 'isearch
-       ;; Indentation
-       evil-shift-width 2
-       ;; Cursor movement 
-       ;; Cursor display
-       ;; Window management
-       evil-split-window-below t
-       evil-vsplit-window-right t
-       evil-undo-system 'undo-tree
-       )
+  ;; vim mode
+  ;; N, I, V, R, 0, M, E state
+  (use-package evil
+    :init
+    (setq evil-want-integration t)
+    (setq evil-want-keybinding nil)
+    (setq
+     ;; Keybindings
+     evil-toggle-key "C-z"   ; use C-z to change to and from Emacs state
+     evil-disable-insert-state-bindings nil
+     evil-want-C-w-delete t  ; delete a word in insert state
+     evil-want-C-u-scroll t  ; scroll up
+     evil-want-C-d-scroll t  ; scroll down
+     evil-want-C-i-jump nil
+     ;; Search
+     evil-search-module 'isearch
+     ;; Indentation
+     evil-shift-width 2
+     ;; Cursor movement 
+     ;; Cursor display
+     ;; Window management
+     evil-split-window-below t
+     evil-vsplit-window-right t
+     evil-undo-system 'undo-tree
+     )
 
-      :config
-      (evil-mode 1)
+    :config
+    (evil-mode 1)
 
-      ;; normal mode map
-      (evil-global-set-key 'normal "U" 'evil-redo)
+    ;; normal mode map
+    (evil-global-set-key 'normal "U" 'evil-redo)
 
-      ;; motion mode map
-      (evil-global-set-key 'motion "j" 'evil-next-visual-line)
-      (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
+    ;; motion mode map
+    (evil-global-set-key 'motion "j" 'evil-next-visual-line)
+    (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
 
-      (evil-set-initial-state 'messages-buffer-mode 'normal)
-      (evil-set-initial-state 'dashboard-mode 'normal))
+    (evil-set-initial-state 'messages-buffer-mode 'normal)
+    (evil-set-initial-state 'dashboard-mode 'normal))
 
-    (use-package evil-collection
-      :after evil
-      :config
-      (evil-collection-init))
-    (use-package general
-      :after evil
-      :config
-      (general-override-mode)
-      (general-def
-        :states 'normal
-        :keymaps '(global override)
-        "C-h" 'evil-window-left
-        "C-j" 'evil-window-down
-        "C-k" 'evil-window-up
-        "C-l" 'evil-window-right
-        )
+  (use-package evil-collection
+    :after evil
+    :config
+    (evil-collection-init))
+  (use-package general
+    :after evil
+    :config
+    (general-override-mode)
+    (general-def
+      :states 'normal
+      :keymaps '(global override)
+      "C-h" 'evil-window-left
+      "C-j" 'evil-window-down
+      "C-k" 'evil-window-up
+      "C-l" 'evil-window-right
+      )
 
-      (general-create-definer leader
-        :states 'normal
-        :keymaps '(global override)
-        :prefix "SPC")
-      (leader "<SPC>" 'counsel-M-x
-        "bb" 'counsel-switch-buffer
-        "b>" 'next-buffer
-        "b<" 'previous-buffer
-        "ff" 'counsel-find-file
-        "df" 'describe-function
-        "dv" 'describe-variable
-        "dk" 'describe-key
-        "dd" 'dired-jump
-        )
+    (general-create-definer leader
+      :states 'normal
+      :keymaps '(global override)
+      :prefix "SPC")
+    (leader "<SPC>" 'counsel-M-x
+      "bb" 'counsel-switch-buffer
+      "b>" 'next-buffer
+      "b<" 'previous-buffer
+      "ff" 'counsel-find-file
+      "df" 'describe-function
+      "dv" 'describe-variable
+      "dk" 'describe-key
+      "dd" 'dired-jump
+      "gg" 'magit
+      )
 
-      (general-create-definer org_leader
-        :states 'normal
-        :keymaps '(org-mode-map override)
-        :prefix "SPC")
+    (general-create-definer org_leader
+      :states 'normal
+      :keymaps '(org-mode-map override)
+      :prefix "SPC")
 
-      (org_leader "lp" 'org-latex-preview)
-      ) 
+    (org_leader "lp" 'org-latex-preview)
+    ) 
 #+end_src
 
 * Which Key

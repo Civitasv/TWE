@@ -305,6 +305,7 @@
     "dv" 'describe-variable
     "dk" 'describe-key
     "dd" 'dired-jump
+    "gg" 'magit
     )
 
   (general-create-definer org_leader
