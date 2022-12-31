@@ -6,6 +6,9 @@
 ;; stop creating #autosave# files
 (setq auto-save-default nil)
 
+(set-language-environment "UTF-8")
+(set-default-coding-systems 'utf-8)
+
 (if (not (display-graphic-p))
     (progn
       ;; 增大垃圾回收的阈值，提高整体性能（内存换效率）
@@ -22,48 +25,11 @@
 
 (add-hook 'emacs-startup-hook #'civ/display-startup-time)
 
-(server-start)
-
-(set-language-environment "UTF-8")
-(set-default-coding-systems 'utf-8)
-
 (when (or (string-equal system-type "windows-nt") ; Microsoft Windows
           (string-equal system-type "gnu/linux"))
   (setq url-proxy-services
         '(("http"  . "127.0.0.1:51837")
           ("https" . "127.0.0.1:51837"))))
-
-(defvar civ/default-font-size 140)
-(defvar civ/default-variable-font-size 140)
-
-;; UI settings
-(scroll-bar-mode 1)	; Disable the scrollbar
-(tool-bar-mode -1)	; Disable the toolbar
-(tooltip-mode -1)	        ; Disable tooltips
-(set-fringe-mode 10)      ; Give some breathing room
-(menu-bar-mode -1)	; Disable the menu bar
-
-;; Set up the visible bell
-(setq visible-bell t)
-
-(column-number-mode)
-(global-display-line-numbers-mode t)
-(setq display-line-numbers-type 'relative)
-
-;; Disable line numbers for some modes, dolist is used to loop
-(dolist (mode '(org-mode-hook
-                term-mode-hook
-                shell-mode-hook
-                eshell-mode-hook))
-  (add-hook mode (lambda () (display-line-numbers-mode 0))))
-
-(set-face-attribute 'default nil :font "JetBrains Mono" :height civ/default-font-size)
-
-;; Set the fixed pitch face
-(set-face-attribute 'fixed-pitch nil :font "JetBrains Mono" :height civ/default-font-size)
-
-;; Set the variable pitch face
-(set-face-attribute 'variable-pitch nil :font "JetBrains Mono" :height civ/default-variable-font-size :weight 'regular)
 
 (defvar bootstrap-version)
 (let ((bootstrap-file
@@ -103,8 +69,149 @@
 (setq auto-save-file-name-transforms
       `((".*" ,(no-littering-expand-var-file-name "auto-save/") t)))
 
+;; UI settings
+(scroll-bar-mode -1)	; Disable the scrollbar
+(tool-bar-mode -1)	; Disable the toolbar
+(tooltip-mode -1)	        ; Disable tooltips
+(set-fringe-mode 10)      ; Give some breathing room
+(menu-bar-mode -1)	; Disable the menu bar
+
+;; Set up the visible bell
+(setq visible-bell t)
+
+(column-number-mode)
+(global-display-line-numbers-mode t)
+(setq display-line-numbers-type 'relative)
+
+;; Disable line numbers for some modes, dolist is used to loop
+(dolist (mode '(org-mode-hook
+                term-mode-hook
+                shell-mode-hook
+                eshell-mode-hook))
+  (add-hook mode (lambda () (display-line-numbers-mode 0))))
+
+(defun civ/font-existsp (font)
+  (if (null (x-list-fonts font))
+      nil t))
+
+(defun civ/make-font-string (font-name font-size)
+  (if (and (stringp font-size)
+           (equal ":" (string (elt font-size 0))))
+      (format "%s%s" font-name font-size)
+    (format "%s-%s" font-name font-size)))
+
+(defvar civ/english-font-size nil)
+(defun civ/set-font (english-fonts
+                     english-font-size
+                     chinese-fonts
+                     &optional chinese-fonts-scale
+                     )
+  (setq chinese-fonts-scale (or chinese-fonts-scale 1.20))
+  (setq face-font-rescale-alist `(("Microsoft Yahei" . ,chinese-fonts-scale)
+                                  ("Microsoft_Yahei" . ,chinese-fonts-scale)
+                                  ("微软雅黑" . ,chinese-fonts-scale)
+                                  ("WenQuanYi Zen Hei" . ,chinese-fonts-scale)))
+  "english-font-size could be set to \":pixelsize=18\" or a integer.
+  If set/leave chinese-font-size to nil, it will follow english-font-size"
+  (require 'cl)                         ; for find if
+  (setq civ/english-font-size english-font-size)
+  (let ((en-font (civ/make-font-string
+                  (find-if #'civ/font-existsp english-fonts)
+                  english-font-size))
+        (zh-font (font-spec :family (find-if #'civ/font-existsp chinese-fonts))))
+
+    ;; Set the default English font
+    ;;
+    ;; The following 2 method cannot make the font settig work in new frames.
+    ;; (set-default-font "Consolas:pixelsize=18")
+    ;; (add-to-list 'default-frame-alist '(font . "Consolas:pixelsize=18"))
+    ;; We have to use set-face-attribute
+    (set-face-attribute
+     'default nil :font en-font)
+    (condition-case font-error
+        (progn
+          (set-face-font 'italic (font-spec :family "JetBrains Mono" :slant 'italic :weight 'normal :size (+ 0.0 english-font-size)))
+          (set-face-font 'bold-italic (font-spec :family "JetBrains Mono" :slant 'italic :weight 'bold :size (+ 0.0 english-font-size)))
+
+          (set-fontset-font t 'symbol (font-spec :family "JetBrains Mono")))
+      (error nil))
+    (set-fontset-font t 'symbol (font-spec :family "FiraCode Nerd Font") nil 'append)
+    (set-fontset-font t nil (font-spec :family "DejaVu Sans"))
+
+    ;; Set Chinese font
+    ;; Do not use 'unicode charset, it will cause the english font setting invalid
+    (dolist (charset '(kana han cjk-misc bopomofo))
+      (set-fontset-font t charset zh-font)))
+  )
+
+(defvar civ/english-fonts '("JetBrains Mono" "Monaco" "Consolas" "DejaVu Sans Mono" "Monospace" "Courier New"))
+(defvar civ/chinese-fonts '("Microsoft Yahei" "Microsoft_Yahei" "微软雅黑" "文泉驿等宽微米黑" "黑体" "新宋体" "宋体"))
+
+(civ/set-font
+ civ/english-fonts
+ 14
+ civ/chinese-fonts)
+
+(defvar civ/chinese-font-size-scale-alist nil)
+
+(setq chinese-font-size-scale-alist '((12 . 1.25) (12.5 . 1.25) (14 . 1.20) (16 . 1.25) (20 . 1.20)))
+
+(defvar civ/english-font-size-steps '(9 10.5 11.5 12 12.5 13 14 16 18 20 22 40))
+(defun civ/step-frame-font-size (step)
+  (let ((steps civ/english-font-size-steps)
+        next-size)
+    (when (< step 0)
+      (setq steps (reverse civ/english-font-size-steps)))
+    (setq next-size
+          (cadr (member civ/english-font-size steps)))
+    (when next-size
+      (civ/set-font civ/english-fonts next-size civ/chinese-fonts (cdr (assoc next-size civ/chinese-font-size-scale-alist)))
+      (message "Your font size is set to %.1f" next-size))))
+
+(global-set-key [(control x) (meta -)] (lambda () (interactive) (civ/step-frame-font-size -1)))
+(global-set-key [(control x) (meta +)] (lambda () (interactive) (civ/step-frame-font-size 1)))
+
+(set-face-attribute 'default nil :font (font-spec))
+
+;; install doom theme
+(use-package doom-themes
+  :config
+  (load-theme 'doom-horizon t)
+  ;; Global settings (defaults)
+  (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
+        doom-themes-enable-italic t) ; if nil, italics is universally disabled
+  ;; Enable flashing mode-line on errors
+  (doom-themes-visual-bell-config)
+  ;; Corrects (and improves) org-mode's native fontification.
+  (doom-themes-org-config))
+
+;; before using it, you should use `all-the-icons-install-fonts` to install the fonts
+(use-package all-the-icons
+  :if (display-graphic-p))
+
+;; emacs air line
+(use-package doom-modeline
+  :hook (window-setup . doom-modeline-mode)
+  :custom ((doom-modeline-height 15)))
+
+;; highlight current line
+(global-hl-line-mode 1)
+
 (use-package emojify
   :hook (after-init . global-emojify-mode))
+
+(use-package dashboard
+  :config
+  (dashboard-setup-startup-hook)
+  (setq dashboard-banner-logo-title "This is Civitasv!")
+  (setq dashboard-startup-banner 'logo)
+  (setq dashboard-center-content nil)
+  (setq dashboard-show-shortcuts t)
+  (setq dashboard-items '((recents  . 5)
+                          (bookmarks . 5)
+                          (agenda . 5)
+                          (registers . 5)))
+  )
 
 ;; Make ESC quit prompts
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
@@ -172,20 +279,18 @@
   :after evil
   :config
   (evil-collection-init))
-
 (use-package general
   :after evil
   :config
   (general-override-mode)
   (general-def
     :states 'normal
-    :keymaps 'override
+    :keymaps '(global override)
     "C-h" 'evil-window-left
     "C-j" 'evil-window-down
     "C-k" 'evil-window-up
     "C-l" 'evil-window-right
-    "<tab>" 'next-buffer
-    "<backtab>" 'previous-buffer)
+    )
 
   (general-create-definer leader
     :states 'normal
@@ -193,12 +298,21 @@
     :prefix "SPC")
   (leader "<SPC>" 'counsel-M-x
     "bb" 'counsel-switch-buffer
+    "b>" 'next-buffer
+    "b<" 'previous-buffer
     "ff" 'counsel-find-file
     "df" 'describe-function
     "dv" 'describe-variable
     "dk" 'describe-key
     "dd" 'dired-jump
     )
+
+  (general-create-definer org_leader
+    :states 'normal
+    :keymaps '(org-mode-map override)
+    :prefix "SPC")
+
+  (org_leader "lp" 'org-latex-preview)
   )
 
 ;; give a hint on the shortcut
@@ -207,30 +321,6 @@
   :diminish which-key-mode
   :config
   (setq which-key-idle-delay 0.3))
-
-;; install doom theme
-(use-package doom-themes
-  :init (load-theme 'doom-horizon t)
-  :config
-  ;; Global settings (defaults)
-  (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
-        doom-themes-enable-italic t) ; if nil, italics is universally disabled
-  ;; Enable flashing mode-line on errors
-  (doom-themes-visual-bell-config)
-  ;; Corrects (and improves) org-mode's native fontification.
-  (doom-themes-org-config))
-
-;; highlight current line
-(global-hl-line-mode 1)
-
-;; before using it, you should use `all-the-icons-install-fonts` to install the fonts
-(use-package all-the-icons
-  :if (display-graphic-p))
-
-;; emacs air line
-(use-package doom-modeline
-  :hook (window-setup . doom-modeline-mode)
-  :custom ((doom-modeline-height 15)))
 
 ;; ivy: generic completion machanism
 ;; swiper: an ivy-enhanced alternative to isearch
@@ -331,12 +421,6 @@
   (setq org-log-done 'time)
   (setq org-log-into-drawer t)
 
-  (setq org-agenda-files
-        '("~/project/org/Tasks.org"
-          "~/project/org/Habits.org"
-          "~/project/org/Archive.org"
-          "~/project/org/Birthdays.org"))
-
   ;; add org-habit, which enables us to show in agenda the STYLE
   ;; which value is habit
   (require 'org-habit)
@@ -353,103 +437,8 @@
   (add-to-list 'org-structure-template-alist '("py" . "src python"))
   (add-to-list 'org-structure-template-alist '("scm" . "src scheme"))
 
-  (setq org-todo-keywords
-        '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
-          (sequence "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/!)" "|" "COMPLETED(c)" "CANCEL(k@)")))
-
-  (setq org-refile-targets
-        '(("~/project/org/Archive.org" :maxlevel . 1)))
-
   ;; Save Org buffers after refiling!
   (advice-add 'org-refile :after 'org-save-all-org-buffers)
-
-  ;; initial some tags
-  (setq org-tag-alist
-        '((:startgroup)
-                                        ; Put mutually exclusive tags here
-          (:endgroup)
-          ("@home" . ?H)
-          ("@work" . ?W)
-          ("agenda" . ?a)
-          ("planning" . ?p)
-          ("publish" . ?P)
-          ("batch" . ?b)
-          ("note" . ?n)
-          ("idea" . ?i)))
-
-  ;; Configure custom agenda views
-  (setq org-agenda-custom-commands
-        '(("d" "Dashboard"
-           ((agenda "" ((org-deadline-warning-days 7)))
-            (todo "NEXT"
-                  ((org-agenda-overriding-header "Next Tasks")))
-            (todo "ACTIVE" ((org-agenda-overriding-header "Active Projects")))))
-
-          ("n" "Next Tasks"
-           ((todo "NEXT"
-                  ((org-agenda-overriding-header "Next Tasks")))))
-
-          ;; Low-effort next actions
-          ("e" "Low Effort Tasks" tags-todo "+TODO=\"NEXT\"+Effort<15&+Effort>0"
-           ((org-agenda-overriding-header "Low Effort Tasks")
-            (org-agenda-max-todos 20)
-            (org-agenda-files org-agenda-files)))
-
-          ;; Search all todo tags with work
-          ("W" "Work Tasks" tags-todo "+@work")
-
-          ("w" "Workflow Status"
-           ((todo "WAIT"
-                  ((org-agenda-overriding-header "Waiting on External")
-                   (org-agenda-files org-agenda-files)))
-            (todo "PLAN"
-                  ((org-agenda-overriding-header "In Planning")
-                   (org-agenda-todo-list-sublevels nil)
-                   (org-agenda-files org-agenda-files)))
-            (todo "READY"
-                  ((org-agenda-overriding-header "Ready for Work")
-                   (org-agenda-files org-agenda-files)))
-            (todo "ACTIVE"
-                  ((org-agenda-overriding-header "Active Projects")
-                   (org-agenda-files org-agenda-files)))
-            (todo "REVIEW"
-                  ((org-agenda-overriding-header "In Review")
-                   (org-agenda-files org-agenda-files)))
-            (todo "COMPLETED"
-                  ((org-agenda-overriding-header "Completed Projects")
-                   (org-agenda-files org-agenda-files)))
-            (todo "CANCEL"
-                  ((org-agenda-overriding-header "Cancelled Projects")
-                   (org-agenda-files org-agenda-files)))))))
-
-  (setq org-capture-templates
-        `(("t" "Tasks / Projects")
-          ("tt" "Task" entry (file+olp "~/project/org/Tasks.org" "Task")
-           "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)
-
-          ("j" "Journal Entries")
-          ("jj" "Journal" entry
-           (file+olp+datetree "~/project/org/Journal.org")
-           "\n* %<%I:%M %p> - Journal :journal:\n\n%?\n\n"
-           :clock-in :clock-resume
-           :empty-lines 1)
-          ("jm" "Meeting" entry
-           (file+olp+datetree "~/project/org/Journal.org")
-           "* %<%I:%M %p> - %a :meetings:\n\n%?\n\n"
-           :clock-in :clock-resume
-           :empty-lines 1)
-
-          ("s" "SICP")
-          ("sl" "External Link" table-line (file+headline "~/project/sicp/link.org" "Link")
-           "| %U | %^{word or sentence} | %^{Link}|" :empty-lines 1)
-
-          ("w" "Workflows")
-          ("we" "Checking Email" entry (file+olp+datetree "~/project/org/Journal.org")
-           "* Checking Email :email:\n\n%?" :clock-in :clock-resume :empty-lines 1)
-
-          ("m" "Metrics Capture")
-          ("mw" "Weight" table-line (file+headline "~/project/org/Metrics.org" "Weight")
-           "| %U | %^{Weight} | %^{Notes} |" :kill-buffer t)))
 
   (setq org-src-tab-acts-natively t)
   (civ/org-font-setup)
@@ -487,6 +476,14 @@
 (add-to-list 'org-latex-packages-alist '("" "color"))
 (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.8))
 
+(use-package magit)
+
+(use-package forge
+  :after magit
+  :init
+  (setq forge-add-default-sections nil)
+  (setq forge-add-default-bindings nil))
+
 (setq tab-always-indent 'complete)
 (use-package company
   :hook (after-init . global-company-mode)
@@ -511,9 +508,6 @@
   :bind ("M-/" . evilnc-comment-or-uncomment-lines))
 
 (add-hook 'emacs-startup-hook (lambda () (electric-pair-mode t)))
-
-(custom-set-faces
- '(hl-line ((t (:extend t :background "#2b363b")))))
 
 (when (string-equal system-type "gnu/linux")  ; Linux
   (use-package term
