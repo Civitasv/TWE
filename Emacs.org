@@ -5,6 +5,10 @@
 
 #+PROPERTY: header-args:emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
 
+* Showcase
+
+[[./images/Showcase.png]]
+
 * Package System Setup
 
 [[https://github.com/radian-software/straight.el#features][straight.el]] is a next-generation, purely functional package manager for Emacs.
