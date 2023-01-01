@@ -7,7 +7,7 @@
 
 * Showcase
 
-[[./images/Showcase.png]]
+[[https://github.com/Civitasv/runemacs/blob/master/images/Showcase.png]]
 
 * Package System Setup
 
