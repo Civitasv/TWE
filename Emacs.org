@@ -1,4 +1,7 @@
-* My Minimal Emacs Configuration for Writing
+#+TITLE: My Minimal Emacs Configuration for Writing
+#+AUTHOR: Civitasv
+#+SETUPFILE: https://fniessen.github.io/org-html-themes/org/theme-readtheorg.setup
+#+OPTIONS: num:nil
 :PROPERTIES:
 :ID:       81dcbf2a-a270-4194-a49e-b8bddace3af9
 :END:
@@ -1016,7 +1019,7 @@ Dired is a built-in file manager for Emacs that does some pretty amazing things!
 - =Z= - Compress or uncompress a file or folder to (=.tar.gz=)
 - =c= - Compress selection to a specific file
 - =dired-compress-files-alist= - Bind compression commands to file extension
-
+  
 **** Other common operations
 
 - =T= - Touch (change timestamp)
