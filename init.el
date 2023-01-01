@@ -562,6 +562,7 @@
     "bb" 'counsel-switch-buffer
     "b>" 'next-buffer
     "b<" 'previous-buffer
+    "br" 'revert-buffer-quick
     "ff" 'counsel-find-file
     "df" 'describe-function
     "dv" 'describe-variable

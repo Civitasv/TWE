@@ -1,11 +1,6 @@
 #+TITLE: My Minimal Emacs Configuration for Writing
 #+AUTHOR: Civitasv
-#+SETUPFILE: https://fniessen.github.io/org-html-themes/org/theme-readtheorg.setup
 #+OPTIONS: num:nil
-:PROPERTIES:
-:ID:       81dcbf2a-a270-4194-a49e-b8bddace3af9
-:END:
-
 #+PROPERTY: header-args:emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
 
 * Showcase
@@ -767,6 +762,7 @@ I prefer to use Vi-like editing command, so I use the [[https://evil.readthedocs
       "bb" 'counsel-switch-buffer
       "b>" 'next-buffer
       "b<" 'previous-buffer
+      "br" 'revert-buffer-quick
       "ff" 'counsel-find-file
       "df" 'describe-function
       "dv" 'describe-variable
