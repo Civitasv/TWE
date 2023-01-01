@@ -5,69 +5,6 @@
 
 #+PROPERTY: header-args:emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
 
-* Disable welcome message 
-
-First of all, I don't like the welcome messages.
-
-#+begin_src emacs-lisp
-  ;; no welcome messages
-  (setq inhibit-startup-message t)
-#+end_src
-
-* Disable backup and autosave files
-
-And I disable emacs to create backup and autosave files.
-
-#+begin_src emacs-lisp
-  ;; stop creating backup~ files
-  (setq make-backup-files nil)
-  ;; stop creating #autosave# files
-  (setq auto-save-default nil)
-#+end_src
-
-* File encoding
-
-#+begin_src emacs-lisp
-  (set-language-environment "UTF-8")
-  (set-default-coding-systems 'utf-8)
-#+end_src
-
-* Performance Testing
-
-Increase memory for Emacs.
-
-#+begin_src emacs-lisp
-  (if (not (display-graphic-p))
-      (progn
-        ;; 增大垃圾回收的阈值，提高整体性能（内存换效率）
-        (setq gc-cons-threshold (* 8192 8192 100))
-        (setq read-process-output-max (* 1024 1024 256)) ;; 128MB
-        ))
-#+end_src
-
-** Messure startup time
-
-#+begin_src emacs-lisp
-  (defun civ/display-startup-time ()
-    (message "Emacs loaded in %s with %d garbage collections."
-              (format "%.2f seconds"
-                      (float-time
-                        (time-subtract after-init-time before-init-time)))
-              gcs-done))
-
-  (add-hook 'emacs-startup-hook #'civ/display-startup-time)
-#+end_src
-
-* Proxy settings
-
-#+begin_src emacs-lisp
-  (when (or (string-equal system-type "windows-nt") ; Microsoft Windows
-            (string-equal system-type "gnu/linux"))
-    (setq url-proxy-services
-          '(("http"  . "127.0.0.1:51837")
-            ("https" . "127.0.0.1:51837"))))
-#+end_src
-
 * Package System Setup
 
 [[https://github.com/radian-software/straight.el#features][straight.el]] is a next-generation, purely functional package manager for Emacs.
@@ -96,7 +33,7 @@ Increase memory for Emacs.
   (require 'use-package)
 #+end_src
 
-** Automatic Package Updates
+** Automatic package updates
 
 The auto-package-update package helps us keep our Emacs packages up to date!  It will prompt you after a certain number of days either at startup or at a specific time of day to remind you to update your packages.
 
@@ -114,7 +51,81 @@ You can also use =M-x auto-package-update-now= to update right now!
 
 #+end_src
 
-* Keep .emacs.d Clean
+* Basics
+
+** Disable welcome message 
+
+First of all, I don't like the welcome messages.
+
+#+begin_src emacs-lisp
+  ;; no welcome messages
+  (setq inhibit-startup-message t)
+#+end_src
+
+** Disable backup and autosave files
+
+And I disable emacs to create backup and autosave files.
+
+#+begin_src emacs-lisp
+  ;; stop creating backup~ files
+  (setq make-backup-files nil)
+  ;; stop creating #autosave# files
+  (setq auto-save-default nil)
+#+end_src
+
+** File encoding
+
+#+begin_src emacs-lisp
+  (set-language-environment "UTF-8")
+  (set-default-coding-systems 'utf-8)
+#+end_src
+
+** Performance testing
+
+Increase memory for Emacs.
+
+#+begin_src emacs-lisp
+  (if (not (display-graphic-p))
+      (progn
+        ;; 增大垃圾回收的阈值，提高整体性能（内存换效率）
+        (setq gc-cons-threshold (* 8192 8192 100))
+        (setq read-process-output-max (* 1024 1024 256)) ;; 128MB
+        ))
+#+end_src
+
+** Messure startup time
+
+#+begin_src emacs-lisp
+  (defun civ/display-startup-time ()
+    (message "Emacs loaded in %s with %d garbage collections."
+              (format "%.2f seconds"
+                      (float-time
+                        (time-subtract after-init-time before-init-time)))
+              gcs-done))
+
+  (add-hook 'emacs-startup-hook #'civ/display-startup-time)
+#+end_src
+
+** Proxy settings
+
+#+begin_src emacs-lisp
+  (when (or (string-equal system-type "windows-nt") ; Microsoft Windows
+            (string-equal system-type "gnu/linux"))
+    (setq url-proxy-services
+          '(("http"  . "127.0.0.1:51837")
+            ("https" . "127.0.0.1:51837"))))
+#+end_src
+
+** Make error visible only
+
+And, I find that the bell annoying.
+
+#+begin_src emacs-lisp
+  ;; Set up the visible bell
+  (setq visible-bell t)
+#+end_src
+
+** Keep .emacs.d Clean
 
 I use the [[https://github.com/emacscollective/no-littering/blob/master/no-littering.el][no-littering]] package to keep folders where we edit files and the Emacs configuration folder clean!  It knows about a wide variety of variables for built in Emacs features as well as those from community packages so it can be much easier than finding and setting these variables yourself.
 
@@ -134,6 +145,49 @@ I use the [[https://github.com/emacscollective/no-littering/blob/master/no-litte
 #+end_src
 
 
+** Better emacs docs
+
+[[https://github.com/Wilfred/helpful][helpful]] gives a better document on almost everything in Emacs.
+
+#+begin_src emacs-lisp
+  ;; give a better doc
+  (use-package helpful
+    :custom
+    (counsel-describe-function-function #'helpful-callable)
+    (counsel-describe-variable-function #'helpful-variable)
+    :bind
+    ([remap describe-function] . counsel-describe-function)
+    ([remap describe-command] . helpful-command)
+    ([remap describe-symbol] . counsel-describe-symbol)
+    ([remap describe-variable] . counsel-describe-variable)
+    ([remap describe-key] . helpful-key))
+#+end_src
+** Commenting
+
+Emacs’ built in commenting functionality comment-dwim (usually bound to M-;) doesn’t always comment things in the way you might expect so we use [[https://github.com/redguardtoo/evil-nerd-commenter][evil-nerd-commenter]] to provide a more familiar behavior.
+
+=<space>/=: comment
+
+#+begin_src emacs-lisp
+  (use-package evil-nerd-commenter)
+#+end_src
+
+** Bracket auto complete
+
+#+begin_src emacs-lisp
+  (add-hook 'emacs-startup-hook (lambda () (electric-pair-mode t)))
+#+end_src
+** PDF with zathura
+
+Zathura is the way!
+
+#+begin_src emacs-lisp
+  (use-package openwith
+    :config
+    (openwith-mode t)
+    (setq openwith-associations '(("\\.pdf\\'" "zathura" (file)))))
+#+end_src
+
 * User interface
 
 ** Toolbar, tooltip and menubar
@@ -141,21 +195,22 @@ I use the [[https://github.com/emacscollective/no-littering/blob/master/no-litte
 Basically, I don't want to show the toolbar, menubar and tootips.
 
 #+begin_src emacs-lisp
-  ;; UI settings
+  ;; Minimal UI
   (scroll-bar-mode -1)	; Disable the scrollbar
   (tool-bar-mode -1)	; Disable the toolbar
   (tooltip-mode -1)	        ; Disable tooltips
   (set-fringe-mode 10)      ; Give some breathing room
   (menu-bar-mode -1)	; Disable the menu bar
-#+end_src
-
-** Make bell visible only
-
-And, I find that the bell annoying.
-
-#+begin_src emacs-lisp
-  ;; Set up the visible bell
-  (setq visible-bell t)
+  
+  (modify-all-frames-parameters
+   '((right-divider-width . 40)
+     (internal-border-width . 40)))
+  (dolist (face '(window-divider
+                  window-divider-first-pixel
+                  window-divider-last-pixel))
+    (face-spec-reset-face face)
+    (set-face-foreground face (face-attribute 'default :background)))
+  (set-face-background 'fringe (face-attribute 'default :background))
 #+end_src
 
 ** Relative line number
@@ -173,6 +228,25 @@ For the modes except org-mode, term-mode and eshell-mode, I think showing the li
                   shell-mode-hook
                   eshell-mode-hook))
     (add-hook mode (lambda () (display-line-numbers-mode 0))))
+#+end_src
+
+** Color Theme
+
+[[https://github.com/hlissner/emacs-doom-themes][doom-themes]] provides many beautiful themes.
+
+#+begin_src emacs-lisp
+  ;; install doom theme
+  (use-package doom-themes
+    :config 
+    (load-theme 'doom-horizon t)
+    ;; Global settings (defaults)
+    (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
+          doom-themes-enable-italic t) ; if nil, italics is universally disabled
+    ;; Enable flashing mode-line on errors
+    (doom-themes-visual-bell-config)
+    ;; Corrects (and improves) org-mode's native fontification.
+    (doom-themes-org-config))
+
 #+end_src
 
 ** Font
@@ -244,7 +318,7 @@ From http://baohaojun.github.io/perfect-emacs-chinese-font.html.
 
   (defvar civ/chinese-font-size-scale-alist nil)
 
-  (setq chinese-font-size-scale-alist '((12 . 1.25) (12.5 . 1.25) (14 . 1.20) (16 . 1.25) (20 . 1.20)))
+  (setq civ/chinese-font-size-scale-alist '((12 . 1.25) (12.5 . 1.25) (14 . 1.20) (16 . 1.25) (20 . 1.20)))
 
   (defvar civ/english-font-size-steps '(9 10.5 11.5 12 12.5 13 14 16 18 20 22 40))
   (defun civ/step-frame-font-size (step)
@@ -264,23 +338,20 @@ From http://baohaojun.github.io/perfect-emacs-chinese-font.html.
   (set-face-attribute 'default nil :font (font-spec))
 #+end_src
 
-** Color Theme
-
-[[https://github.com/hlissner/emacs-doom-themes][doom-themes]] provides many beautiful themes.
-
+** Dashboard
 #+begin_src emacs-lisp
-  ;; install doom theme
-  (use-package doom-themes
+  (use-package dashboard
     :config
-    (load-theme 'doom-horizon t)
-    ;; Global settings (defaults)
-    (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
-          doom-themes-enable-italic t) ; if nil, italics is universally disabled
-    ;; Enable flashing mode-line on errors
-    (doom-themes-visual-bell-config)
-    ;; Corrects (and improves) org-mode's native fontification.
-    (doom-themes-org-config))
-
+    (dashboard-setup-startup-hook)
+    (setq dashboard-banner-logo-title "This is Civitasv!")
+    (setq dashboard-startup-banner 'official)
+    (setq dashboard-center-content nil)
+    (setq dashboard-show-shortcuts t)
+    (setq dashboard-items '((recents  . 5)
+                            (bookmarks . 5)
+                            (agenda . 5)
+                            (registers . 5)))
+    )
 #+end_src
 
 ** Better Mode line
@@ -288,15 +359,15 @@ From http://baohaojun.github.io/perfect-emacs-chinese-font.html.
 [[https://github.com/seagle0128/doom-modeline][doom-modeline]] provides a better modeline. Before installing doom-modeline, you should install [[https://github.com/domtronn/all-the-icons.el][all-the-icons]] and use =M-x all-the-icons-install-font= to install all the fonts needed.
 
 #+begin_src emacs-lisp
-
   ;; before using it, you should use `all-the-icons-install-fonts` to install the fonts
   (use-package all-the-icons
     :if (display-graphic-p))
 
   ;; emacs air line
   (use-package doom-modeline
-    :hook (window-setup . doom-modeline-mode)
-    :custom ((doom-modeline-height 15)))
+    :hook (after-init . doom-modeline-mode)
+    :custom ((doom-modeline-height 15)
+             (doom-modeline-indent-info t)))
 #+end_src
 
 ** Highlight Current Line
@@ -313,24 +384,278 @@ From http://baohaojun.github.io/perfect-emacs-chinese-font.html.
     :hook (after-init . global-emojify-mode))
 #+end_src
 
+** SVG Tag Mode
 
-** Dashboard
 #+begin_src emacs-lisp
-  (use-package dashboard
+  (use-package svg-tag-mode
     :config
-    (dashboard-setup-startup-hook)
-    (setq dashboard-banner-logo-title "This is Civitasv!")
-    (setq dashboard-startup-banner 'logo)
-    (setq dashboard-center-content nil)
-    (setq dashboard-show-shortcuts t)
-    (setq dashboard-items '((recents  . 5)
-                            (bookmarks . 5)
-                            (agenda . 5)
-                            (registers . 5)))
+    (defconst date-re "[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\}")
+    (defconst time-re "[0-9]\\{2\\}:[0-9]\\{2\\}")
+    (defconst day-re "[A-Za-z]\\{3\\}")
+    (defconst day-time-re (format "\\(%s\\)? ?\\(%s\\)?" day-re time-re))
+
+    (defun svg-progress-percent (value)
+      (svg-image (svg-lib-concat
+                  (svg-lib-progress-bar (/ (string-to-number value) 100.0)
+                                        nil :margin 0 :stroke 2 :radius 3 :padding 2 :width 11)
+                  (svg-lib-tag (concat value "%")
+                               nil :stroke 0 :margin 0)) :ascent 'center))
+
+    (defun svg-progress-count (value)
+      (let* ((seq (mapcar #'string-to-number (split-string value "/")))
+             (count (float (car seq)))
+             (total (float (cadr seq))))
+        (svg-image (svg-lib-concat
+                    (svg-lib-progress-bar (/ count total) nil
+                                          :margin 0 :stroke 2 :radius 3 :padding 2 :width 11)
+                    (svg-lib-tag value nil
+                                 :stroke 0 :margin 0)) :ascent 'center)))
+    (setq svg-tag-tags
+          `(
+            ;; Progress, format: [22%] [22/32]
+            ("\\(\\[[0-9]\\{1,3\\}%\\]\\)" . ((lambda (tag)
+                                                (svg-progress-percent (substring tag 1 -2)))))
+            ("\\(\\[[0-9]+/[0-9]+\\]\\)" . ((lambda (tag)
+                                              (svg-progress-count (substring tag 1 -1)))))
+            ;; Org tags, format: :PROPERTIES:
+            ("\\(:[A-Za-z0-9]+:\\)" . ((lambda (tag) (svg-tag-make tag))))
+            ("\\(:[A-Za-z0-9]+[ \-]:\\)" . ((lambda (tag) tag)))
+            ;; Task priority, format: [#Z]
+            ("\\[#[a-zA-Z]\\]" . ( (lambda (tag)
+                                  (svg-tag-make tag :face 'org-priority
+                                                :beg 2 :end -1 :margin 0))))
+            ;; TODO / DONE
+            ("TODO" . ((lambda (tag) (svg-tag-make "TODO" :face 'org-todo :inverse t :margin 0))))
+            ("DONE" . ((lambda (tag) (svg-tag-make "DONE" :face 'org-done :margin 0))))
+            ;; Citation of the form [cite:@Knuth:1984]
+            ("\\(\\[cite:@[A-Za-z]+:\\)" . ((lambda (tag)
+                                              (svg-tag-make tag
+                                                            :inverse t
+                                                            :beg 7 :end -1
+                                                            :crop-right t))))
+            ("\\[cite:@[A-Za-z]+:\\([0-9]+\\]\\)" . ((lambda (tag)
+                                                       (svg-tag-make tag
+                                                                     :end -1
+                                                                     :crop-left t))))
+
+            ;; Active date (with or without day name, with or without time),
+            ;; format: <2022-12-12>, <2022-12-12 12:21>
+            (,(format "\\(<%s>\\)" date-re) .
+             ((lambda (tag)
+                (svg-tag-make tag :beg 1 :end -1 :margin 0))))
+            (,(format "\\(<%s \\)%s>" date-re day-time-re) .
+             ((lambda (tag)
+                (svg-tag-make tag :beg 1 :inverse nil :crop-right t :margin 0))))
+            (,(format "<%s \\(%s>\\)" date-re day-time-re) .
+             ((lambda (tag)
+                (svg-tag-make tag :end -1 :inverse t :crop-left t :margin 0))))
+
+            ;; Inactive date  (with or without day name, with or without time)
+            ;; format: <2022-12-12>, [2022-12-12 12:21]
+            (,(format "\\(\\[%s\\]\\)" date-re) .
+             ((lambda (tag)
+                (svg-tag-make tag :beg 1 :end -1 :margin 0 :face 'org-date))))
+            (,(format "\\(\\[%s \\)%s\\]" date-re day-time-re) .
+             ((lambda (tag)
+                (svg-tag-make tag :beg 1 :inverse nil :crop-right t :margin 0 :face 'org-date))))
+            (,(format "\\[%s \\(%s\\]\\)" date-re day-time-re) .
+             ((lambda (tag)
+                (svg-tag-make tag :end -1 :inverse t :crop-left t :margin 0 :face 'org-date))))
+            ))
+
+    (dolist (mode '(org-mode-hook))
+      (add-hook mode (lambda () (svg-tag-mode 1))))
     )
 #+end_src
 
-* Keybindings Configuration
+* Org Mode
+
+[[https://orgmode.org/][Org Mode]] is one of the best modes in Emacs, It can make life easier.
+
+** Org Babel
+
+Org Babel allows us to evaluate code blocks in org file.
+
+#+begin_src emacs-lisp
+  (defun civ/org-babel-setup ()
+    (org-babel-do-load-languages
+     'org-babel-load-languages
+     '((emacs-lisp .t)
+       (python .t)
+       (scheme .t)))
+
+    (setq org-confirm-babel-evaluate nil)
+    (setq org-babel-python-command "python"))
+#+end_src
+
+** Header
+
+#+begin_src emacs-lisp
+  (defun civ/org-font-setup ()
+    ;; Replace list hyphen with dot
+    (font-lock-add-keywords 'org-mode
+                            '(("^ *\\([-]\\) "
+                               (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
+
+    ;; Set faces for heading levels
+    (dolist (face '((org-level-1 . 1.2)
+                    (org-level-2 . 1.1)
+                    (org-level-3 . 1.05)
+                    (org-level-4 . 1.0)
+                    (org-level-5 . 1.1)
+                    (org-level-6 . 1.1)
+                    (org-level-7 . 1.1)
+                    (org-level-8 . 1.1)))
+      (set-face-attribute (car face) nil :font "JetBrains Mono" :weight 'regular :slant 'italic :height (cdr face))))
+#+end_src
+
+** Basic Config
+
+This section contains the basic configuration for org-mode plus the configuration for Org agendas and capture templates.
+
+#+begin_src emacs-lisp
+  ;; org mode setting
+  (defun civ/org-code-automatically-format ()
+    "org code format"
+    (interactive)
+    (when (org-in-src-block-p)
+      (org-edit-special)
+      (indent-region (point-min) (point-max))
+      (org-edit-src-exit)))
+
+  (defun civ/org-mode-setup ()
+    (org-indent-mode)
+    (visual-line-mode 1)
+    (setq org-src-tab-acts-natively t)
+    (define-key org-mode-map
+      (kbd "C-i") #'civ/org-code-automatically-format))
+
+  (defun civ/org-agenda-show-svg ()
+    (let* ((case-fold-search nil)
+           (keywords (mapcar #'svg-tag--build-keywords svg-tag--active-tags))
+           (keyword (car keywords)))
+      (while keyword
+        (save-excursion
+          (while (re-search-forward (nth 0 keyword) nil t)
+            (overlay-put (make-overlay
+                          (match-beginning 0) (match-end 0))
+                         'display  (nth 3 (eval (nth 2 keyword)))) ))
+        (pop keywords)
+        (setq keyword (car keywords)))))
+
+  (add-hook 'org-agenda-finalize-hook #'civ/org-agenda-show-svg)
+
+  ;; use org to organize your life
+  (use-package org
+    :hook (org-mode . civ/org-mode-setup)
+    :config
+
+    (setq org-agenda-start-with-log-mode t)
+    (setq org-log-done 'time)
+    (setq org-log-into-drawer t)
+
+    ;; add org-habit, which enables us to show in agenda the STYLE
+    ;; which value is habit
+    (require 'org-habit)
+    (add-to-list 'org-modules 'org-habit)
+    (setq org-habit-graph-column 60)
+
+    ;; add org-tempo, which enables us to add some typical language
+    ;; and its alias, to input the alias and <TAB>, we can generate
+    ;; the code block quickly
+    (require 'org-tempo)
+    (add-to-list 'org-structure-template-alist '("sh" . "src shell"))
+    (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
+    (add-to-list 'org-structure-template-alist '("js" . "src javascript"))
+    (add-to-list 'org-structure-template-alist '("py" . "src python"))
+    (add-to-list 'org-structure-template-alist '("scm" . "src scheme"))
+
+    ;; Save Org buffers after refiling!
+    (advice-add 'org-refile :after 'org-save-all-org-buffers)
+
+    (setq org-src-tab-acts-natively t)
+    (civ/org-font-setup)
+    (civ/org-babel-setup))
+#+end_src
+
+** Org Modern UI
+
+#+begin_src emacs-lisp
+  (use-package org-modern
+    :after org
+    :config
+    (setq ;; Edit settings
+     org-auto-align-tags nil
+     org-tags-column 0
+     org-fold-catch-invisible-edits 'show-and-error
+     org-special-ctrl-a/e t
+     org-insert-heading-respect-content t
+
+     ;; Org styling, hide markup etc.
+     org-hide-emphasis-markers nil
+     org-pretty-entities nil
+     org-ellipsis "  "
+
+     ;; Agenda styling
+     org-agenda-tags-column 0
+     org-agenda-block-separator ?─
+     org-agenda-time-grid
+     '((daily today require-timed)
+       (800 1000 1200 1400 1600 1800 2000)
+       " ┄┄┄┄┄ " "┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄")
+     org-agenda-current-time-string
+     "⭠ now ─────────────────────────────────────────────────")
+    (global-org-modern-mode)
+    )
+#+end_src
+
+** Center Org Buffers
+
+Use [[https://github.com/joostkremers/visual-fill-column][visual-fill-column]] to center org-mode buffers for a more pleasing writing experience as it centers the contents of the buffer horizontally to seem more like you are editing a document. This is really a matter of personal preference so you can remove the block below if you don't like the behavior.
+
+#+begin_src emacs-lisp
+  (defun civ/org-mode-visual-fill ()
+    (setq visual-fill-column-width 100
+          visual-fill-column-center-text t)
+    (visual-fill-column-mode 1))
+
+  (use-package visual-fill-column
+    :hook (org-mode . civ/org-mode-visual-fill))
+#+end_src
+
+** Auto-tangle Configuration Files
+
+I don't want execute =org-babel-tangle= every time to make the configuration file change, so I make it automate.
+
+#+begin_src emacs-lisp
+  ;; Automatically tangle our Emacs.org config file when we save it
+  (defun efs/org-babel-tangle-config ()
+    (when (string-equal (buffer-file-name)
+                        (expand-file-name "~/.emacs.d/Emacs.org"))
+      ;; Dynamic scoping to the rescue
+      (let ((org-confirm-babel-evaluate nil))
+        (org-babel-tangle))))
+
+  (add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'efs/org-babel-tangle-config)))
+#+end_src
+
+** Math Formulas
+
+Use =<SPC>lp= to preview math formulas.
+
+$$a^2=b$$
+
+#+begin_src emacs-lisp
+  (setq org-latex-create-formula-image-program 'dvipng)
+  (setq org-latex-listings 'minted)
+  (require 'ox-latex)
+  (add-to-list 'org-latex-packages-alist '("" "minted"))
+  (add-to-list 'org-latex-packages-alist '("" "listings"))
+  (add-to-list 'org-latex-packages-alist '("" "color"))
+  (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.8))
+#+end_src
+
+* Keybindings
 
 I prefer to use Vi-like editing command, so I use the [[https://evil.readthedocs.io/en/latest/index.html][evil-mode]] to realize it.
 
@@ -407,6 +732,7 @@ I prefer to use Vi-like editing command, so I use the [[https://evil.readthedocs
     :after evil
     :config
     (evil-collection-init))
+
   (use-package general
     :after evil
     :config
@@ -420,10 +746,16 @@ I prefer to use Vi-like editing command, so I use the [[https://evil.readthedocs
       "C-l" 'evil-window-right
       )
 
+    (general-create-definer visual_leader
+      :states 'visual
+      :keymaps '(global override)
+      :prefix "SPC")
+
     (general-create-definer leader
       :states 'normal
       :keymaps '(global override)
       :prefix "SPC")
+
     (leader "<SPC>" 'counsel-M-x
       "bb" 'counsel-switch-buffer
       "b>" 'next-buffer
@@ -434,7 +766,11 @@ I prefer to use Vi-like editing command, so I use the [[https://evil.readthedocs
       "dk" 'describe-key
       "dd" 'dired-jump
       "gg" 'magit
+      "oe" 'org-export-dispatch
+      "/"  'evilnc-comment-or-uncomment-lines
       )
+
+    (visual_leader "/" 'evilnc-comment-or-uncomment-lines)
 
     (general-create-definer org_leader
       :states 'normal
@@ -445,7 +781,7 @@ I prefer to use Vi-like editing command, so I use the [[https://evil.readthedocs
     ) 
 #+end_src
 
-* Which Key
+** Which Key
 
 [[https://github.com/justbur/emacs-which-key][which-key]] is a good libarary to provide some hints on the shortcut, for example, if we input =C-x=, it will toggle a UI panel to show all the commands which start with =C-x=.
 
@@ -502,177 +838,6 @@ I prefer to use Vi-like editing command, so I use the [[https://evil.readthedocs
     (ivy-rich-mode 1))
 #+end_src
 
-* Helpful
-
-[[https://github.com/Wilfred/helpful][helpful]] gives a better document on almost everything in Emacs.
-
-#+begin_src emacs-lisp
-  ;; give a better doc
-  (use-package helpful
-    :custom
-    (counsel-describe-function-function #'helpful-callable)
-    (counsel-describe-variable-function #'helpful-variable)
-    :bind
-    ([remap describe-function] . counsel-describe-function)
-    ([remap describe-command] . helpful-command)
-    ([remap describe-variable] . counsel-describe-variable)
-    ([remap describe-key] . helpful-key))
-#+end_src
-
-* Org Mode
-
-[[https://orgmode.org/][Org Mode]] is one of the best modes in Emacs, It can make life easier.
-
-** Org Babel
-
-Org Babel allows us to evaluate code blocks in org file.
-
-#+begin_src emacs-lisp
-  (defun civ/org-babel-setup ()
-    (org-babel-do-load-languages
-     'org-babel-load-languages
-     '((emacs-lisp .t)
-       (python .t)
-       (scheme .t)))
-
-    (setq org-confirm-babel-evaluate nil)
-    (setq org-babel-python-command "python"))
-#+end_src
-
-** Header Setting
-
-#+begin_src emacs-lisp
-  (defun civ/org-font-setup ()
-    ;; Replace list hyphen with dot
-    (font-lock-add-keywords 'org-mode
-                            '(("^ *\\([-]\\) "
-                               (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
-
-    ;; Set faces for heading levels
-    (dolist (face '((org-level-1 . 1.2)
-                    (org-level-2 . 1.1)
-                    (org-level-3 . 1.05)
-                    (org-level-4 . 1.0)
-                    (org-level-5 . 1.1)
-                    (org-level-6 . 1.1)
-                    (org-level-7 . 1.1)
-                    (org-level-8 . 1.1)))
-      (set-face-attribute (car face) nil :font "JetBrains Mono" :weight 'regular :height (cdr face))))
-#+end_src
-
-** Basic Config
-
-This section contains the basic configuration for org-mode plus the configuration for Org agendas and capture templates.
-
-#+begin_src emacs-lisp
-  ;; org mode setting
-  (defun civ/org-code-automatically-format ()
-    "org code format"
-    (interactive)
-    (when (org-in-src-block-p)
-      (org-edit-special)
-      (indent-region (point-min) (point-max))
-      (org-edit-src-exit)))
-
-  (defun civ/org-mode-setup ()
-    (org-indent-mode)
-    (visual-line-mode 1)
-    (setq org-src-tab-acts-natively t)
-    (define-key org-mode-map
-      (kbd "C-i") #'civ/org-code-automatically-format))
-
-  ;; use org to organize your life
-  (use-package org
-    :hook (org-mode . civ/org-mode-setup)
-    :config
-    (setq org-ellipsis " ⌄")
-
-    (setq org-agenda-start-with-log-mode t)
-    (setq org-log-done 'time)
-    (setq org-log-into-drawer t)
-
-    ;; add org-habit, which enables us to show in agenda the STYLE
-    ;; which value is habit
-    (require 'org-habit)
-    (add-to-list 'org-modules 'org-habit)
-    (setq org-habit-graph-column 60)
-
-    ;; add org-tempo, which enables us to add some typical language
-    ;; and its alias, to input the alias and <TAB>, we can generate
-    ;; the code block quickly
-    (require 'org-tempo)
-    (add-to-list 'org-structure-template-alist '("sh" . "src shell"))
-    (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
-    (add-to-list 'org-structure-template-alist '("js" . "src javascript"))
-    (add-to-list 'org-structure-template-alist '("py" . "src python"))
-    (add-to-list 'org-structure-template-alist '("scm" . "src scheme"))
-
-    ;; Save Org buffers after refiling!
-    (advice-add 'org-refile :after 'org-save-all-org-buffers)
-
-    (setq org-src-tab-acts-natively t)
-    (civ/org-font-setup)
-    (civ/org-babel-setup))
-#+end_src
-
-** Nicer Bullets
-
-[[https://github.com/sabof/org-bullets][org-bullets]] makes the heading stars better.
-
-#+begin_src emacs-lisp
-  (use-package org-bullets
-    :after org
-    :hook (org-mode . org-bullets-mode)
-    :custom
-    (org-bullets-bullet-list '("◉" "○" "●" "○" "●" "○" "●")))
-#+end_src
-
-** Center Org Buffers
-
-Use [[https://github.com/joostkremers/visual-fill-column][visual-fill-column]] to center org-mode buffers for a more pleasing writing experience as it centers the contents of the buffer horizontally to seem more like you are editing a document. This is really a matter of personal preference so you can remove the block below if you don't like the behavior.
-
-#+begin_src emacs-lisp
-  (defun civ/org-mode-visual-fill ()
-    (setq visual-fill-column-width 100
-          visual-fill-column-center-text t)
-    (visual-fill-column-mode 1))
-
-  (use-package visual-fill-column
-    :hook (org-mode . civ/org-mode-visual-fill))
-#+end_src
-
-** Auto-tangle Configuration Files
-
-I don't want execute =org-babel-tangle= every time to make the configuration file change, so I make it automate.
-
-#+begin_src emacs-lisp
-  ;; Automatically tangle our Emacs.org config file when we save it
-  (defun efs/org-babel-tangle-config ()
-    (when (string-equal (buffer-file-name)
-                        (expand-file-name "~/.emacs.d/Emacs.org"))
-      ;; Dynamic scoping to the rescue
-      (let ((org-confirm-babel-evaluate nil))
-        (org-babel-tangle))))
-
-  (add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'efs/org-babel-tangle-config)))
-#+end_src
-
-** Math Formulas
-
-Use =<SPC>lp= to preview math formulas.
-
-$$a^2=b$$
-
-#+begin_src emacs-lisp
-  (setq org-latex-create-formula-image-program 'dvipng)
-  (setq org-latex-listings 'minted)
-  (require 'ox-latex)
-  (add-to-list 'org-latex-packages-alist '("" "minted"))
-  (add-to-list 'org-latex-packages-alist '("" "listings"))
-  (add-to-list 'org-latex-packages-alist '("" "color"))
-  (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.8))
-#+end_src
-
 * Magit
 
 Magit is powerful.
@@ -691,8 +856,6 @@ Magit is powerful.
 
 [[http://company-mode.github.io/][Company Mode]] provides a nicer in-buffer completion interface than completion-at-point which is more reminiscent of what you would expect from an IDE. I add a simple configuration to make the keybindings a little more useful (TAB now completes the selection and initiates completion at the current location if needed).
 
-I also use [[https://github.com/sebastiencs/company-box][company-box]] to further enhance the look of the completions with icons and better overall presentation.
-
 #+begin_src emacs-lisp
   (setq tab-always-indent 'complete)
   (use-package company
@@ -710,27 +873,12 @@ I also use [[https://github.com/sebastiencs/company-box][company-box]] to furthe
       :config
       ;; global activation of the unicode symbol completion 
       (add-to-list 'company-backends 'company-math-symbols-unicode))
-    (use-package company-box
-      :hook (company-mode . company-box-mode))
+    ;; (use-package company-box
+    ;;   :hook (company-mode . company-box-mode))
     )
 #+end_src
 
-* Commenting
-
-Emacs’ built in commenting functionality comment-dwim (usually bound to M-;) doesn’t always comment things in the way you might expect so we use [[https://github.com/redguardtoo/evil-nerd-commenter][evil-nerd-commenter]] to provide a more familiar behavior. I’ve bound it to M-/ since other editors sometimes use this binding but you could also replace Emacs’ M-; binding with this command.
-
-#+begin_src emacs-lisp
-  (use-package evil-nerd-commenter
-    :bind ("M-/" . evilnc-comment-or-uncomment-lines))
-#+end_src
-
-* Bracket Auto Complete
-
-#+begin_src emacs-lisp
-  (add-hook 'emacs-startup-hook (lambda () (electric-pair-mode t)))
-#+end_src
-
-* Terminals
+* Terminal
 
 ** term-mode
 
@@ -749,8 +897,6 @@ Run a terminal with =M-x term!=
 - =C-c C-j= - Return to line-mode
 - If you have =evil-collection= installed, =term-mode= will enter char mode when you use Evil's Insert mode
   
-ATTENTION: When you're in terminal mode, any regular ==C-x whatever== will become ==C-c whatever==, so you should use ==C-c b== to switch buffer.
-
 #+begin_src emacs-lisp
   (when (string-equal system-type "gnu/linux")  ; Linux
     (use-package term
@@ -809,7 +955,7 @@ For more thoughts on Eshell, check out these articles by Pierre Neidhardt:
       (setq eshell-destroy-buffer-when-process-dies t)
       (setq eshell-visual-commands '("htop" "zsh" "vim")))
 
-    (eshell-git-prompt-use-theme 'powerline))
+    (eshell-git-prompt-use-theme 'simple))
 #+end_src
 
 * File ManageMent
@@ -832,7 +978,7 @@ Dired is a built-in file manager for Emacs that does some pretty amazing things!
 - =M-RET= - Show file in other window without focusing (previewing files)
 - =g o= (=dired-view-file=) - Open file but in a "preview" mode, close with =q=
 - =g= / =g r= Refresh the buffer with =revert-buffer= after changing configuration (and after filesystem changes!)
-  
+    
 **** Marking files
 
 - =m= - Marks a file

@@ -1,3 +1,30 @@
+(defvar bootstrap-version)
+(let ((bootstrap-file
+       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+      (bootstrap-version 6))
+  (unless (file-exists-p bootstrap-file)
+    (with-current-buffer
+        (url-retrieve-synchronously
+         "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
+         'silent 'inhibit-cookies)
+      (goto-char (point-max))
+      (eval-print-last-sexp)))
+  (load bootstrap-file nil 'nomessage))
+
+(straight-use-package 'use-package)
+(setq straight-use-package-by-default t)
+;; Initialize package sources
+(require 'use-package)
+
+(use-package auto-package-update
+  :custom
+  (auto-package-update-interval 7)
+  (auto-package-update-prompt-before-update t)
+  (auto-package-update-hide-results t)
+  :config
+  (auto-package-update-maybe)
+  (auto-package-update-at-time "09:00"))
+
 ;; no welcome messages
 (setq inhibit-startup-message t)
 
@@ -31,32 +58,8 @@
         '(("http"  . "127.0.0.1:51837")
           ("https" . "127.0.0.1:51837"))))
 
-(defvar bootstrap-version)
-(let ((bootstrap-file
-       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
-      (bootstrap-version 6))
-  (unless (file-exists-p bootstrap-file)
-    (with-current-buffer
-        (url-retrieve-synchronously
-         "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
-         'silent 'inhibit-cookies)
-      (goto-char (point-max))
-      (eval-print-last-sexp)))
-  (load bootstrap-file nil 'nomessage))
-
-(straight-use-package 'use-package)
-(setq straight-use-package-by-default t)
-;; Initialize package sources
-(require 'use-package)
-
-(use-package auto-package-update
-  :custom
-  (auto-package-update-interval 7)
-  (auto-package-update-prompt-before-update t)
-  (auto-package-update-hide-results t)
-  :config
-  (auto-package-update-maybe)
-  (auto-package-update-at-time "09:00"))
+;; Set up the visible bell
+(setq visible-bell t)
 
 ;; NOTE: If you want to move everything out of the ~/.emacs.d folder
 ;; reliably, set `user-emacs-directory` before loading no-littering!
@@ -69,15 +72,43 @@
 (setq auto-save-file-name-transforms
       `((".*" ,(no-littering-expand-var-file-name "auto-save/") t)))
 
-;; UI settings
+;; give a better doc
+(use-package helpful
+  :custom
+  (counsel-describe-function-function #'helpful-callable)
+  (counsel-describe-variable-function #'helpful-variable)
+  :bind
+  ([remap describe-function] . counsel-describe-function)
+  ([remap describe-command] . helpful-command)
+  ([remap describe-symbol] . counsel-describe-symbol)
+  ([remap describe-variable] . counsel-describe-variable)
+  ([remap describe-key] . helpful-key))
+
+(use-package evil-nerd-commenter)
+
+(add-hook 'emacs-startup-hook (lambda () (electric-pair-mode t)))
+
+(use-package openwith
+  :config
+  (openwith-mode t)
+  (setq openwith-associations '(("\\.pdf\\'" "zathura" (file)))))
+
+;; Minimal UI
 (scroll-bar-mode -1)	; Disable the scrollbar
 (tool-bar-mode -1)	; Disable the toolbar
 (tooltip-mode -1)	        ; Disable tooltips
 (set-fringe-mode 10)      ; Give some breathing room
 (menu-bar-mode -1)	; Disable the menu bar
 
-;; Set up the visible bell
-(setq visible-bell t)
+(modify-all-frames-parameters
+ '((right-divider-width . 40)
+   (internal-border-width . 40)))
+(dolist (face '(window-divider
+                window-divider-first-pixel
+                window-divider-last-pixel))
+  (face-spec-reset-face face)
+  (set-face-foreground face (face-attribute 'default :background)))
+(set-face-background 'fringe (face-attribute 'default :background))
 
 (column-number-mode)
 (global-display-line-numbers-mode t)
@@ -89,6 +120,18 @@
                 shell-mode-hook
                 eshell-mode-hook))
   (add-hook mode (lambda () (display-line-numbers-mode 0))))
+
+;; install doom theme
+(use-package doom-themes
+  :config 
+  (load-theme 'doom-horizon t)
+  ;; Global settings (defaults)
+  (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
+        doom-themes-enable-italic t) ; if nil, italics is universally disabled
+  ;; Enable flashing mode-line on errors
+  (doom-themes-visual-bell-config)
+  ;; Corrects (and improves) org-mode's native fontification.
+  (doom-themes-org-config))
 
 (defun civ/font-existsp (font)
   (if (null (x-list-fonts font))
@@ -154,7 +197,7 @@
 
 (defvar civ/chinese-font-size-scale-alist nil)
 
-(setq chinese-font-size-scale-alist '((12 . 1.25) (12.5 . 1.25) (14 . 1.20) (16 . 1.25) (20 . 1.20)))
+(setq civ/chinese-font-size-scale-alist '((12 . 1.25) (12.5 . 1.25) (14 . 1.20) (16 . 1.25) (20 . 1.20)))
 
 (defvar civ/english-font-size-steps '(9 10.5 11.5 12 12.5 13 14 16 18 20 22 40))
 (defun civ/step-frame-font-size (step)
@@ -173,38 +216,11 @@
 
 (set-face-attribute 'default nil :font (font-spec))
 
-;; install doom theme
-(use-package doom-themes
-  :config
-  (load-theme 'doom-horizon t)
-  ;; Global settings (defaults)
-  (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
-        doom-themes-enable-italic t) ; if nil, italics is universally disabled
-  ;; Enable flashing mode-line on errors
-  (doom-themes-visual-bell-config)
-  ;; Corrects (and improves) org-mode's native fontification.
-  (doom-themes-org-config))
-
-;; before using it, you should use `all-the-icons-install-fonts` to install the fonts
-(use-package all-the-icons
-  :if (display-graphic-p))
-
-;; emacs air line
-(use-package doom-modeline
-  :hook (window-setup . doom-modeline-mode)
-  :custom ((doom-modeline-height 15)))
-
-;; highlight current line
-(global-hl-line-mode 1)
-
-(use-package emojify
-  :hook (after-init . global-emojify-mode))
-
 (use-package dashboard
   :config
   (dashboard-setup-startup-hook)
   (setq dashboard-banner-logo-title "This is Civitasv!")
-  (setq dashboard-startup-banner 'logo)
+  (setq dashboard-startup-banner 'official)
   (setq dashboard-center-content nil)
   (setq dashboard-show-shortcuts t)
   (setq dashboard-items '((recents  . 5)
@@ -212,6 +228,245 @@
                           (agenda . 5)
                           (registers . 5)))
   )
+
+;; before using it, you should use `all-the-icons-install-fonts` to install the fonts
+(use-package all-the-icons
+  :if (display-graphic-p))
+
+;; emacs air line
+(use-package doom-modeline
+  :hook (after-init . doom-modeline-mode)
+  :custom ((doom-modeline-height 15)
+           (doom-modeline-indent-info t)))
+
+;; highlight current line
+(global-hl-line-mode 1)
+
+(use-package emojify
+  :hook (after-init . global-emojify-mode))
+
+(use-package svg-tag-mode
+  :config
+  (defconst date-re "[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\}")
+  (defconst time-re "[0-9]\\{2\\}:[0-9]\\{2\\}")
+  (defconst day-re "[A-Za-z]\\{3\\}")
+  (defconst day-time-re (format "\\(%s\\)? ?\\(%s\\)?" day-re time-re))
+
+  (defun svg-progress-percent (value)
+    (svg-image (svg-lib-concat
+                (svg-lib-progress-bar (/ (string-to-number value) 100.0)
+                                      nil :margin 0 :stroke 2 :radius 3 :padding 2 :width 11)
+                (svg-lib-tag (concat value "%")
+                             nil :stroke 0 :margin 0)) :ascent 'center))
+
+  (defun svg-progress-count (value)
+    (let* ((seq (mapcar #'string-to-number (split-string value "/")))
+           (count (float (car seq)))
+           (total (float (cadr seq))))
+      (svg-image (svg-lib-concat
+                  (svg-lib-progress-bar (/ count total) nil
+                                        :margin 0 :stroke 2 :radius 3 :padding 2 :width 11)
+                  (svg-lib-tag value nil
+                               :stroke 0 :margin 0)) :ascent 'center)))
+  (setq svg-tag-tags
+        `(
+          ;; Progress, format: [22%] [22/32]
+          ("\\(\\[[0-9]\\{1,3\\}%\\]\\)" . ((lambda (tag)
+                                              (svg-progress-percent (substring tag 1 -2)))))
+          ("\\(\\[[0-9]+/[0-9]+\\]\\)" . ((lambda (tag)
+                                            (svg-progress-count (substring tag 1 -1)))))
+          ;; Org tags, format: :PROPERTIES:
+          ("\\(:[A-Za-z0-9]+:\\)" . ((lambda (tag) (svg-tag-make tag))))
+          ("\\(:[A-Za-z0-9]+[ \-]:\\)" . ((lambda (tag) tag)))
+          ;; Task priority, format: [#Z]
+          ("\\[#[a-zA-Z]\\]" . ( (lambda (tag)
+                                (svg-tag-make tag :face 'org-priority
+                                              :beg 2 :end -1 :margin 0))))
+          ;; TODO / DONE
+          ("TODO" . ((lambda (tag) (svg-tag-make "TODO" :face 'org-todo :inverse t :margin 0))))
+          ("DONE" . ((lambda (tag) (svg-tag-make "DONE" :face 'org-done :margin 0))))
+          ;; Citation of the form [cite:@Knuth:1984]
+          ("\\(\\[cite:@[A-Za-z]+:\\)" . ((lambda (tag)
+                                            (svg-tag-make tag
+                                                          :inverse t
+                                                          :beg 7 :end -1
+                                                          :crop-right t))))
+          ("\\[cite:@[A-Za-z]+:\\([0-9]+\\]\\)" . ((lambda (tag)
+                                                     (svg-tag-make tag
+                                                                   :end -1
+                                                                   :crop-left t))))
+
+          ;; Active date (with or without day name, with or without time),
+          ;; format: <2022-12-12>, <2022-12-12 12:21>
+          (,(format "\\(<%s>\\)" date-re) .
+           ((lambda (tag)
+              (svg-tag-make tag :beg 1 :end -1 :margin 0))))
+          (,(format "\\(<%s \\)%s>" date-re day-time-re) .
+           ((lambda (tag)
+              (svg-tag-make tag :beg 1 :inverse nil :crop-right t :margin 0))))
+          (,(format "<%s \\(%s>\\)" date-re day-time-re) .
+           ((lambda (tag)
+              (svg-tag-make tag :end -1 :inverse t :crop-left t :margin 0))))
+
+          ;; Inactive date  (with or without day name, with or without time)
+          ;; format: <2022-12-12>, [2022-12-12 12:21]
+          (,(format "\\(\\[%s\\]\\)" date-re) .
+           ((lambda (tag)
+              (svg-tag-make tag :beg 1 :end -1 :margin 0 :face 'org-date))))
+          (,(format "\\(\\[%s \\)%s\\]" date-re day-time-re) .
+           ((lambda (tag)
+              (svg-tag-make tag :beg 1 :inverse nil :crop-right t :margin 0 :face 'org-date))))
+          (,(format "\\[%s \\(%s\\]\\)" date-re day-time-re) .
+           ((lambda (tag)
+              (svg-tag-make tag :end -1 :inverse t :crop-left t :margin 0 :face 'org-date))))
+          ))
+
+  (dolist (mode '(org-mode-hook))
+    (add-hook mode (lambda () (svg-tag-mode 1))))
+  )
+
+(defun civ/org-babel-setup ()
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((emacs-lisp .t)
+     (python .t)
+     (scheme .t)))
+
+  (setq org-confirm-babel-evaluate nil)
+  (setq org-babel-python-command "python"))
+
+(defun civ/org-font-setup ()
+  ;; Replace list hyphen with dot
+  (font-lock-add-keywords 'org-mode
+                          '(("^ *\\([-]\\) "
+                             (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
+
+  ;; Set faces for heading levels
+  (dolist (face '((org-level-1 . 1.2)
+                  (org-level-2 . 1.1)
+                  (org-level-3 . 1.05)
+                  (org-level-4 . 1.0)
+                  (org-level-5 . 1.1)
+                  (org-level-6 . 1.1)
+                  (org-level-7 . 1.1)
+                  (org-level-8 . 1.1)))
+    (set-face-attribute (car face) nil :font "JetBrains Mono" :weight 'regular :slant 'italic :height (cdr face))))
+
+;; org mode setting
+(defun civ/org-code-automatically-format ()
+  "org code format"
+  (interactive)
+  (when (org-in-src-block-p)
+    (org-edit-special)
+    (indent-region (point-min) (point-max))
+    (org-edit-src-exit)))
+
+(defun civ/org-mode-setup ()
+  (org-indent-mode)
+  (visual-line-mode 1)
+  (setq org-src-tab-acts-natively t)
+  (define-key org-mode-map
+    (kbd "C-i") #'civ/org-code-automatically-format))
+
+(defun civ/org-agenda-show-svg ()
+  (let* ((case-fold-search nil)
+         (keywords (mapcar #'svg-tag--build-keywords svg-tag--active-tags))
+         (keyword (car keywords)))
+    (while keyword
+      (save-excursion
+        (while (re-search-forward (nth 0 keyword) nil t)
+          (overlay-put (make-overlay
+                        (match-beginning 0) (match-end 0))
+                       'display  (nth 3 (eval (nth 2 keyword)))) ))
+      (pop keywords)
+      (setq keyword (car keywords)))))
+
+(add-hook 'org-agenda-finalize-hook #'civ/org-agenda-show-svg)
+
+;; use org to organize your life
+(use-package org
+  :hook (org-mode . civ/org-mode-setup)
+  :config
+
+  (setq org-agenda-start-with-log-mode t)
+  (setq org-log-done 'time)
+  (setq org-log-into-drawer t)
+
+  ;; add org-habit, which enables us to show in agenda the STYLE
+  ;; which value is habit
+  (require 'org-habit)
+  (add-to-list 'org-modules 'org-habit)
+  (setq org-habit-graph-column 60)
+
+  ;; add org-tempo, which enables us to add some typical language
+  ;; and its alias, to input the alias and <TAB>, we can generate
+  ;; the code block quickly
+  (require 'org-tempo)
+  (add-to-list 'org-structure-template-alist '("sh" . "src shell"))
+  (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
+  (add-to-list 'org-structure-template-alist '("js" . "src javascript"))
+  (add-to-list 'org-structure-template-alist '("py" . "src python"))
+  (add-to-list 'org-structure-template-alist '("scm" . "src scheme"))
+
+  ;; Save Org buffers after refiling!
+  (advice-add 'org-refile :after 'org-save-all-org-buffers)
+
+  (setq org-src-tab-acts-natively t)
+  (civ/org-font-setup)
+  (civ/org-babel-setup))
+
+(use-package org-modern
+  :after org
+  :config
+  (setq ;; Edit settings
+   org-auto-align-tags nil
+   org-tags-column 0
+   org-fold-catch-invisible-edits 'show-and-error
+   org-special-ctrl-a/e t
+   org-insert-heading-respect-content t
+
+   ;; Org styling, hide markup etc.
+   org-hide-emphasis-markers nil
+   org-pretty-entities nil
+   org-ellipsis "  "
+
+   ;; Agenda styling
+   org-agenda-tags-column 0
+   org-agenda-block-separator ?─
+   org-agenda-time-grid
+   '((daily today require-timed)
+     (800 1000 1200 1400 1600 1800 2000)
+     " ┄┄┄┄┄ " "┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄")
+   org-agenda-current-time-string
+   "⭠ now ─────────────────────────────────────────────────")
+  (global-org-modern-mode)
+  )
+
+(defun civ/org-mode-visual-fill ()
+  (setq visual-fill-column-width 100
+        visual-fill-column-center-text t)
+  (visual-fill-column-mode 1))
+
+(use-package visual-fill-column
+  :hook (org-mode . civ/org-mode-visual-fill))
+
+;; Automatically tangle our Emacs.org config file when we save it
+(defun efs/org-babel-tangle-config ()
+  (when (string-equal (buffer-file-name)
+                      (expand-file-name "~/.emacs.d/Emacs.org"))
+    ;; Dynamic scoping to the rescue
+    (let ((org-confirm-babel-evaluate nil))
+      (org-babel-tangle))))
+
+(add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'efs/org-babel-tangle-config)))
+
+(setq org-latex-create-formula-image-program 'dvipng)
+(setq org-latex-listings 'minted)
+(require 'ox-latex)
+(add-to-list 'org-latex-packages-alist '("" "minted"))
+(add-to-list 'org-latex-packages-alist '("" "listings"))
+(add-to-list 'org-latex-packages-alist '("" "color"))
+(setq org-format-latex-options (plist-put org-format-latex-options :scale 1.8))
 
 ;; Make ESC quit prompts
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
@@ -279,6 +534,7 @@
   :after evil
   :config
   (evil-collection-init))
+
 (use-package general
   :after evil
   :config
@@ -292,10 +548,16 @@
     "C-l" 'evil-window-right
     )
 
+  (general-create-definer visual_leader
+    :states 'visual
+    :keymaps '(global override)
+    :prefix "SPC")
+
   (general-create-definer leader
     :states 'normal
     :keymaps '(global override)
     :prefix "SPC")
+
   (leader "<SPC>" 'counsel-M-x
     "bb" 'counsel-switch-buffer
     "b>" 'next-buffer
@@ -306,7 +568,11 @@
     "dk" 'describe-key
     "dd" 'dired-jump
     "gg" 'magit
+    "oe" 'org-export-dispatch
+    "/"  'evilnc-comment-or-uncomment-lines
     )
+
+  (visual_leader "/" 'evilnc-comment-or-uncomment-lines)
 
   (general-create-definer org_leader
     :states 'normal
@@ -358,125 +624,6 @@
   :init
   (ivy-rich-mode 1))
 
-;; give a better doc
-(use-package helpful
-  :custom
-  (counsel-describe-function-function #'helpful-callable)
-  (counsel-describe-variable-function #'helpful-variable)
-  :bind
-  ([remap describe-function] . counsel-describe-function)
-  ([remap describe-command] . helpful-command)
-  ([remap describe-variable] . counsel-describe-variable)
-  ([remap describe-key] . helpful-key))
-
-(defun civ/org-babel-setup ()
-  (org-babel-do-load-languages
-   'org-babel-load-languages
-   '((emacs-lisp .t)
-     (python .t)
-     (scheme .t)))
-
-  (setq org-confirm-babel-evaluate nil)
-  (setq org-babel-python-command "python"))
-
-(defun civ/org-font-setup ()
-  ;; Replace list hyphen with dot
-  (font-lock-add-keywords 'org-mode
-                          '(("^ *\\([-]\\) "
-                             (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
-
-  ;; Set faces for heading levels
-  (dolist (face '((org-level-1 . 1.2)
-                  (org-level-2 . 1.1)
-                  (org-level-3 . 1.05)
-                  (org-level-4 . 1.0)
-                  (org-level-5 . 1.1)
-                  (org-level-6 . 1.1)
-                  (org-level-7 . 1.1)
-                  (org-level-8 . 1.1)))
-    (set-face-attribute (car face) nil :font "JetBrains Mono" :weight 'regular :height (cdr face))))
-
-;; org mode setting
-(defun civ/org-code-automatically-format ()
-  "org code format"
-  (interactive)
-  (when (org-in-src-block-p)
-    (org-edit-special)
-    (indent-region (point-min) (point-max))
-    (org-edit-src-exit)))
-
-(defun civ/org-mode-setup ()
-  (org-indent-mode)
-  (visual-line-mode 1)
-  (setq org-src-tab-acts-natively t)
-  (define-key org-mode-map
-    (kbd "C-i") #'civ/org-code-automatically-format))
-
-;; use org to organize your life
-(use-package org
-  :hook (org-mode . civ/org-mode-setup)
-  :config
-  (setq org-ellipsis " ⌄")
-
-  (setq org-agenda-start-with-log-mode t)
-  (setq org-log-done 'time)
-  (setq org-log-into-drawer t)
-
-  ;; add org-habit, which enables us to show in agenda the STYLE
-  ;; which value is habit
-  (require 'org-habit)
-  (add-to-list 'org-modules 'org-habit)
-  (setq org-habit-graph-column 60)
-
-  ;; add org-tempo, which enables us to add some typical language
-  ;; and its alias, to input the alias and <TAB>, we can generate
-  ;; the code block quickly
-  (require 'org-tempo)
-  (add-to-list 'org-structure-template-alist '("sh" . "src shell"))
-  (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
-  (add-to-list 'org-structure-template-alist '("js" . "src javascript"))
-  (add-to-list 'org-structure-template-alist '("py" . "src python"))
-  (add-to-list 'org-structure-template-alist '("scm" . "src scheme"))
-
-  ;; Save Org buffers after refiling!
-  (advice-add 'org-refile :after 'org-save-all-org-buffers)
-
-  (setq org-src-tab-acts-natively t)
-  (civ/org-font-setup)
-  (civ/org-babel-setup))
-
-(use-package org-bullets
-  :after org
-  :hook (org-mode . org-bullets-mode)
-  :custom
-  (org-bullets-bullet-list '("◉" "○" "●" "○" "●" "○" "●")))
-
-(defun civ/org-mode-visual-fill ()
-  (setq visual-fill-column-width 100
-        visual-fill-column-center-text t)
-  (visual-fill-column-mode 1))
-
-(use-package visual-fill-column
-  :hook (org-mode . civ/org-mode-visual-fill))
-
-;; Automatically tangle our Emacs.org config file when we save it
-(defun efs/org-babel-tangle-config ()
-  (when (string-equal (buffer-file-name)
-                      (expand-file-name "~/.emacs.d/Emacs.org"))
-    ;; Dynamic scoping to the rescue
-    (let ((org-confirm-babel-evaluate nil))
-      (org-babel-tangle))))
-
-(add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'efs/org-babel-tangle-config)))
-
-(setq org-latex-create-formula-image-program 'dvipng)
-(setq org-latex-listings 'minted)
-(require 'ox-latex)
-(add-to-list 'org-latex-packages-alist '("" "minted"))
-(add-to-list 'org-latex-packages-alist '("" "listings"))
-(add-to-list 'org-latex-packages-alist '("" "color"))
-(setq org-format-latex-options (plist-put org-format-latex-options :scale 1.8))
-
 (use-package magit)
 
 (use-package forge
@@ -501,14 +648,9 @@
     :config
     ;; global activation of the unicode symbol completion 
     (add-to-list 'company-backends 'company-math-symbols-unicode))
-  (use-package company-box
-    :hook (company-mode . company-box-mode))
+  ;; (use-package company-box
+  ;;   :hook (company-mode . company-box-mode))
   )
-
-(use-package evil-nerd-commenter
-  :bind ("M-/" . evilnc-comment-or-uncomment-lines))
-
-(add-hook 'emacs-startup-hook (lambda () (electric-pair-mode t)))
 
 (when (string-equal system-type "gnu/linux")  ; Linux
   (use-package term
@@ -546,7 +688,7 @@
     (setq eshell-destroy-buffer-when-process-dies t)
     (setq eshell-visual-commands '("htop" "zsh" "vim")))
 
-  (eshell-git-prompt-use-theme 'powerline))
+  (eshell-git-prompt-use-theme 'simple))
 
 (use-package dired
   :straight nil
