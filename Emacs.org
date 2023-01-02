@@ -82,6 +82,16 @@ And I disable emacs to create backup and autosave files.
   (set-default-coding-systems 'utf-8)
 #+end_src
 
+** Word wrap
+
+#+begin_src emacs-lisp
+  (add-hook 'org-mode-hook '(lambda ()
+                              (setq visual-line-fringe-indicators '(unknown unknown))
+                              (visual-line-mode)
+                              (if visual-line-mode
+                                  (setq word-wrap nil))))
+#+end_src
+
 ** Performance testing
 
 Increase memory for Emacs.
@@ -368,7 +378,7 @@ From http://baohaojun.github.io/perfect-emacs-chinese-font.html.
   ;; emacs air line
   (use-package doom-modeline
     :hook (after-init . doom-modeline-mode)
-    :custom ((doom-modeline-height 15)
+    :custom ((doom-modeline-height 25)
              (doom-modeline-indent-info t)))
 #+end_src
 
@@ -613,8 +623,6 @@ This section contains the basic configuration for org-mode plus the configuratio
 
 ** Center Org Buffers
 
-Use [[https://github.com/joostkremers/visual-fill-column][visual-fill-column]] to center org-mode buffers for a more pleasing writing experience as it centers the contents of the buffer horizontally to seem more like you are editing a document. This is really a matter of personal preference so you can remove the block below if you don't like the behavior.
-
 #+begin_src emacs-lisp
   (defun civ/org-mode-visual-fill ()
     (setq visual-fill-column-width 100
@@ -726,6 +734,9 @@ I prefer to use Vi-like editing command, so I use the [[https://evil.readthedocs
     ;; motion mode map
     (evil-global-set-key 'motion "j" 'evil-next-visual-line)
     (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
+
+    (evil-global-set-key 'motion (kbd "<down>") 'evil-next-visual-line)
+    (evil-global-set-key 'motion (kbd "<up>") 'evil-previous-visual-line)
 
     (evil-set-initial-state 'messages-buffer-mode 'normal)
     (evil-set-initial-state 'dashboard-mode 'normal))

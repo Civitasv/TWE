@@ -36,6 +36,12 @@
 (set-language-environment "UTF-8")
 (set-default-coding-systems 'utf-8)
 
+(add-hook 'org-mode-hook '(lambda ()
+                            (setq visual-line-fringe-indicators '(unknown unknown))
+                            (visual-line-mode)
+                            (if visual-line-mode
+                                (setq word-wrap nil))))
+
 (if (not (display-graphic-p))
     (progn
       ;; 增大垃圾回收的阈值，提高整体性能（内存换效率）
@@ -236,7 +242,7 @@
 ;; emacs air line
 (use-package doom-modeline
   :hook (after-init . doom-modeline-mode)
-  :custom ((doom-modeline-height 15)
+  :custom ((doom-modeline-height 25)
            (doom-modeline-indent-info t)))
 
 ;; highlight current line
@@ -526,6 +532,9 @@
   ;; motion mode map
   (evil-global-set-key 'motion "j" 'evil-next-visual-line)
   (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
+
+  (evil-global-set-key 'motion (kbd "<down>") 'evil-next-visual-line)
+  (evil-global-set-key 'motion (kbd "<up>") 'evil-previous-visual-line)
 
   (evil-set-initial-state 'messages-buffer-mode 'normal)
   (evil-set-initial-state 'dashboard-mode 'normal))
