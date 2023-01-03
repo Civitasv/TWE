@@ -159,6 +159,13 @@
 
 (use-package modus-themes
   :config
+  (setq modus-themes-bold-constructs t
+        modus-themes-italic-constructs t
+        modus-themes-org-blocks 'gray-background
+        modus-themes-variable-pitch-ui t
+        modus-themes-common-palette-overrides
+        '((border-mode-line-active unspecified)
+          (border-mode-line-inactive unspecified)))
   (load-theme 'modus-operandi-tinted t))
 
 (use-package dashboard
