@@ -27,6 +27,8 @@
 
 ;; no welcome messages
 (setq inhibit-startup-message t)
+(setq inhibit-splash-screen t)
+(setq initial-scratch-message nil)
 
 ;; stop creating backup~ files
 (setq make-backup-files nil)
@@ -36,11 +38,15 @@
 (set-language-environment "UTF-8")
 (set-default-coding-systems 'utf-8)
 
-(add-hook 'org-mode-hook '(lambda ()
-                            (setq visual-line-fringe-indicators '(unknown unknown))
-                            (visual-line-mode)
-                            (if visual-line-mode
-                                (setq word-wrap nil))))
+(dolist (hook '(org-mode-hook
+                c-mode-hook
+                helpful-mode-hook))
+  (add-hook hook
+            '(lambda ()
+               (setq visual-line-fringe-indicators '(unknown unknown))
+               (visual-line-mode)
+               (if visual-line-mode
+                   (setq word-wrap nil)))))
 
 (if (not (display-graphic-p))
     (progn
@@ -100,21 +106,15 @@
   (setq openwith-associations '(("\\.pdf\\'" "zathura" (file)))))
 
 ;; Minimal UI
-(scroll-bar-mode -1)	; Disable the scrollbar
 (tool-bar-mode -1)	; Disable the toolbar
-(tooltip-mode -1)	        ; Disable tooltips
-(set-fringe-mode 10)      ; Give some breathing room
 (menu-bar-mode -1)	; Disable the menu bar
 
-(modify-all-frames-parameters
- '((right-divider-width . 40)
-   (internal-border-width . 40)))
-(dolist (face '(window-divider
-                window-divider-first-pixel
-                window-divider-last-pixel))
-  (face-spec-reset-face face)
-  (set-face-foreground face (face-attribute 'default :background)))
-(set-face-background 'fringe (face-attribute 'default :background))
+(if (boundp 'fringe-mode)
+    (fringe-mode -1))
+(if (boundp 'scroll-bar-mode)
+    (scroll-bar-mode -1))
+
+(setq-default left-margin-width 1 right-margin-width 1)
 
 (column-number-mode)
 (global-display-line-numbers-mode t)
@@ -127,100 +127,39 @@
                 eshell-mode-hook))
   (add-hook mode (lambda () (display-line-numbers-mode 0))))
 
-;; install doom theme
-(use-package doom-themes
-  :config 
-  (load-theme 'doom-horizon t)
-  ;; Global settings (defaults)
-  (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
-        doom-themes-enable-italic t) ; if nil, italics is universally disabled
-  ;; Enable flashing mode-line on errors
-  (doom-themes-visual-bell-config)
-  ;; Corrects (and improves) org-mode's native fontification.
-  (doom-themes-org-config))
+(pixel-scroll-mode)
 
-(defun civ/font-existsp (font)
-  (if (null (x-list-fonts font))
-      nil t))
+;; (setq civ/chinese-font-size-scale-alist '((12 . 1.25) (12.5 . 1.25) (14 . 1.20) (16 . 1.25) (20 . 1.20)))
+(setq chinese-fonts-scale 1.20)
+(setq face-font-rescale-alist `(("Microsoft Yahei" . ,chinese-fonts-scale)
+                                ("Microsoft_Yahei" . ,chinese-fonts-scale)
+                                ("LXGW WenKai" . ,chinese-fonts-scale)
+                                ("WenQuanYi Zen Hei" . ,chinese-fonts-scale)))
 
-(defun civ/make-font-string (font-name font-size)
-  (if (and (stringp font-size)
-           (equal ":" (string (elt font-size 0))))
-      (format "%s%s" font-name font-size)
-    (format "%s-%s" font-name font-size)))
+(let ((zh-font (font-spec :family "LXGW Wenkai")))
+  (set-face-attribute 'default nil :font "JetBrains Mono-13")
+  (set-face-attribute 'fixed-pitch nil :font "JetBrains Mono-13") ;; code block size
+  (set-face-attribute 'variable-pitch nil :font "JetBrains Mono-14")
+  (set-fontset-font t 'symbol (font-spec :family "FiraCode Nerd Font") nil 'append)
+  (set-fontset-font t nil (font-spec :family "DejaVu Sans"))
 
-(defvar civ/english-font-size nil)
-(defun civ/set-font (english-fonts
-                     english-font-size
-                     chinese-fonts
-                     &optional chinese-fonts-scale
-                     )
-  (setq chinese-fonts-scale (or chinese-fonts-scale 1.20))
-  (setq face-font-rescale-alist `(("Microsoft Yahei" . ,chinese-fonts-scale)
-                                  ("Microsoft_Yahei" . ,chinese-fonts-scale)
-                                  ("微软雅黑" . ,chinese-fonts-scale)
-                                  ("WenQuanYi Zen Hei" . ,chinese-fonts-scale)))
-  "english-font-size could be set to \":pixelsize=18\" or a integer.
-  If set/leave chinese-font-size to nil, it will follow english-font-size"
-  (require 'cl)                         ; for find if
-  (setq civ/english-font-size english-font-size)
-  (let ((en-font (civ/make-font-string
-                  (find-if #'civ/font-existsp english-fonts)
-                  english-font-size))
-        (zh-font (font-spec :family (find-if #'civ/font-existsp chinese-fonts))))
+  ;; Set Chinese font
+  ;; Do not use 'unicode charset, it will cause the english font setting invalid
+  (dolist (charset '(kana han cjk-misc bopomofo))
+    (set-fontset-font t charset zh-font)))
 
-    ;; Set the default English font
-    ;;
-    ;; The following 2 method cannot make the font settig work in new frames.
-    ;; (set-default-font "Consolas:pixelsize=18")
-    ;; (add-to-list 'default-frame-alist '(font . "Consolas:pixelsize=18"))
-    ;; We have to use set-face-attribute
-    (set-face-attribute
-     'default nil :font en-font)
-    (condition-case font-error
-        (progn
-          (set-face-font 'italic (font-spec :family "JetBrains Mono" :slant 'italic :weight 'normal :size (+ 0.0 english-font-size)))
-          (set-face-font 'bold-italic (font-spec :family "JetBrains Mono" :slant 'italic :weight 'bold :size (+ 0.0 english-font-size)))
+;; improve theme loading
+(defadvice load-theme (before clear-previous-themes activate)
+  "Clear existing theme settings instead of layering them"
+  (mapc #'disable-theme custom-enabled-themes))
 
-          (set-fontset-font t 'symbol (font-spec :family "JetBrains Mono")))
-      (error nil))
-    (set-fontset-font t 'symbol (font-spec :family "FiraCode Nerd Font") nil 'append)
-    (set-fontset-font t nil (font-spec :family "DejaVu Sans"))
+(add-hook 'text-mode-hook
+          (lambda ()
+            (variable-pitch-mode 1)))
 
-    ;; Set Chinese font
-    ;; Do not use 'unicode charset, it will cause the english font setting invalid
-    (dolist (charset '(kana han cjk-misc bopomofo))
-      (set-fontset-font t charset zh-font)))
-  )
-
-(defvar civ/english-fonts '("JetBrains Mono" "Monaco" "Consolas" "DejaVu Sans Mono" "Monospace" "Courier New"))
-(defvar civ/chinese-fonts '("Microsoft Yahei" "Microsoft_Yahei" "微软雅黑" "文泉驿等宽微米黑" "黑体" "新宋体" "宋体"))
-
-(civ/set-font
- civ/english-fonts
- 14
- civ/chinese-fonts)
-
-(defvar civ/chinese-font-size-scale-alist nil)
-
-(setq civ/chinese-font-size-scale-alist '((12 . 1.25) (12.5 . 1.25) (14 . 1.20) (16 . 1.25) (20 . 1.20)))
-
-(defvar civ/english-font-size-steps '(9 10.5 11.5 12 12.5 13 14 16 18 20 22 40))
-(defun civ/step-frame-font-size (step)
-  (let ((steps civ/english-font-size-steps)
-        next-size)
-    (when (< step 0)
-      (setq steps (reverse civ/english-font-size-steps)))
-    (setq next-size
-          (cadr (member civ/english-font-size steps)))
-    (when next-size
-      (civ/set-font civ/english-fonts next-size civ/chinese-fonts (cdr (assoc next-size civ/chinese-font-size-scale-alist)))
-      (message "Your font size is set to %.1f" next-size))))
-
-(global-set-key [(control x) (meta -)] (lambda () (interactive) (civ/step-frame-font-size -1)))
-(global-set-key [(control x) (meta +)] (lambda () (interactive) (civ/step-frame-font-size 1)))
-
-(set-face-attribute 'default nil :font (font-spec))
+(use-package modus-themes
+  :config
+  (load-theme 'modus-operandi-tinted t))
 
 (use-package dashboard
   :config
@@ -348,15 +287,15 @@
                              (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
 
   ;; Set faces for heading levels
-  (dolist (face '((org-level-1 . 1.2)
-                  (org-level-2 . 1.1)
+  (dolist (face '((org-level-1 . 1.1)
+                  (org-level-2 . 1.06)
                   (org-level-3 . 1.05)
                   (org-level-4 . 1.0)
                   (org-level-5 . 1.1)
                   (org-level-6 . 1.1)
                   (org-level-7 . 1.1)
                   (org-level-8 . 1.1)))
-    (set-face-attribute (car face) nil :font "JetBrains Mono" :weight 'regular :slant 'italic :height (cdr face))))
+    (set-face-attribute (car face) nil :font "JetBrains Mono" :weight 'regular :height (cdr face))))
 
 ;; org mode setting
 (defun civ/org-code-automatically-format ()
@@ -537,7 +476,10 @@
   (evil-global-set-key 'motion (kbd "<up>") 'evil-previous-visual-line)
 
   (evil-set-initial-state 'messages-buffer-mode 'normal)
-  (evil-set-initial-state 'dashboard-mode 'normal))
+  (evil-set-initial-state 'dashboard-mode 'normal)
+  ;; define my own command
+  (evil-ex-define-cmd "V[split]" 'evil-window-vsplit)
+  )
 
 (use-package evil-collection
   :after evil
