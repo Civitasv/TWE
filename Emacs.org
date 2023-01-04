@@ -29,7 +29,9 @@
 [[https://github.com/jwiegley/use-package][use-package]] is not a package manager, its primary purpose is for the configuration and loading of packages. We can make our configuration one place and use it everyelse.
 
 #+begin_src emacs-lisp
-  (straight-use-package 'use-package)
+  (if (<= emacs-major-version 28)
+      (straight-use-package 'use-package))
+  
   (setq straight-use-package-by-default t)
   ;; Initialize package sources
   (require 'use-package)
@@ -55,26 +57,13 @@ You can also use =M-x auto-package-update-now= to update right now!
 
 * Basics
 
-** Disable welcome message 
-
-First of all, I don't like the welcome messages.
-
-#+begin_src emacs-lisp
-  ;; no welcome messages
-  (setq inhibit-startup-message t)
-  (setq inhibit-splash-screen t)
-  (setq initial-scratch-message nil)
-#+end_src
-
-** Disable backup and autosave files
-
-And I disable emacs to create backup and autosave files.
+** Allow backup and autosave files
 
 #+begin_src emacs-lisp
   ;; stop creating backup~ files
-  (setq make-backup-files nil)
+  (setq make-backup-files t)
   ;; stop creating #autosave# files
-  (setq auto-save-default nil)
+  (setq auto-save-default t)
 #+end_src
 
 ** File encoding
@@ -87,7 +76,6 @@ And I disable emacs to create backup and autosave files.
 ** Word wrap
 
 #+begin_src emacs-lisp
-
   (dolist (hook '(org-mode-hook
                   c-mode-hook
                   helpful-mode-hook))
@@ -97,32 +85,6 @@ And I disable emacs to create backup and autosave files.
                  (visual-line-mode)
                  (if visual-line-mode
                      (setq word-wrap nil)))))
-#+end_src
-
-** Performance testing
-
-Increase memory for Emacs.
-
-#+begin_src emacs-lisp
-  (if (not (display-graphic-p))
-      (progn
-        ;; 增大垃圾回收的阈值，提高整体性能（内存换效率）
-        (setq gc-cons-threshold (* 8192 8192 100))
-        (setq read-process-output-max (* 1024 1024 256)) ;; 128MB
-        ))
-#+end_src
-
-** Messure startup time
-
-#+begin_src emacs-lisp
-  (defun civ/display-startup-time ()
-    (message "Emacs loaded in %s with %d garbage collections."
-              (format "%.2f seconds"
-                      (float-time
-                        (time-subtract after-init-time before-init-time)))
-              gcs-done))
-
-  (add-hook 'emacs-startup-hook #'civ/display-startup-time)
 #+end_src
 
 ** Proxy settings
@@ -171,14 +133,11 @@ I use the [[https://github.com/emacscollective/no-littering/blob/master/no-litte
 #+begin_src emacs-lisp
   ;; give a better doc
   (use-package helpful
-    :custom
-    (counsel-describe-function-function #'helpful-callable)
-    (counsel-describe-variable-function #'helpful-variable)
     :bind
-    ([remap describe-function] . counsel-describe-function)
+    ([remap describe-function] . helpful-function)
     ([remap describe-command] . helpful-command)
-    ([remap describe-symbol] . counsel-describe-symbol)
-    ([remap describe-variable] . counsel-describe-variable)
+    ([remap describe-symbol] . helpful-symbol)
+    ([remap describe-variable] . helpful-variable)
     ([remap describe-key] . helpful-key))
 #+end_src
 ** Commenting
@@ -209,22 +168,7 @@ Zathura is the way!
 
 * User interface
 
-** Toolbar, tooltip and menubar
-
-Basically, I don't want to show the toolbar, menubar and tootips.
-
-#+begin_src emacs-lisp
-  ;; Minimal UI
-  (tool-bar-mode -1)	; Disable the toolbar
-  (menu-bar-mode -1)	; Disable the menu bar
-
-  (if (boundp 'fringe-mode)
-      (fringe-mode -1))
-  (if (boundp 'scroll-bar-mode)
-      (scroll-bar-mode -1))
-#+end_src
-
-** Magins
+** Margins
 
 #+begin_src emacs-lisp
   (setq-default left-margin-width 1 right-margin-width 1)
@@ -250,24 +194,17 @@ For the modes except org-mode, term-mode and eshell-mode, I think showing the li
 ** Scroll more naturally
 
 #+begin_src emacs-lisp
-  (pixel-scroll-mode)
+  (pixel-scroll-precision-mode)
 #+end_src
 ** Font
 
 From http://baohaojun.github.io/perfect-emacs-chinese-font.html.
 
 #+begin_src emacs-lisp
-  ;; (setq civ/chinese-font-size-scale-alist '((12 . 1.25) (12.5 . 1.25) (14 . 1.20) (16 . 1.25) (20 . 1.20)))
-  (setq chinese-fonts-scale 1.20)
-  (setq face-font-rescale-alist `(("Microsoft Yahei" . ,chinese-fonts-scale)
-                                  ("Microsoft_Yahei" . ,chinese-fonts-scale)
-                                  ("LXGW WenKai" . ,chinese-fonts-scale)
-                                  ("WenQuanYi Zen Hei" . ,chinese-fonts-scale)))
-
-  (let ((zh-font (font-spec :family "LXGW Wenkai")))
-    (set-face-attribute 'default nil :font "JetBrains Mono-13")
-    (set-face-attribute 'fixed-pitch nil :font "JetBrains Mono-13") ;; code block size
-    (set-face-attribute 'variable-pitch nil :font "JetBrains Mono-14")
+  (let ((zh-font (font-spec :font "Sarasa Gothic-14")))
+    (set-face-attribute 'default nil :font "Iosevka-14")
+    (set-face-attribute 'fixed-pitch nil :font "Iosevka-14") ;; code block size
+    (set-face-attribute 'variable-pitch nil :font "Iosevka-14")
     (set-fontset-font t 'symbol (font-spec :family "FiraCode Nerd Font") nil 'append)
     (set-fontset-font t nil (font-spec :family "DejaVu Sans"))
 
@@ -463,15 +400,15 @@ Org Babel allows us to evaluate code blocks in org file.
                                (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
 
     ;; Set faces for heading levels
-    (dolist (face '((org-level-1 . 1.1)
-                    (org-level-2 . 1.06)
-                    (org-level-3 . 1.05)
+    (dolist (face '((org-level-1 . 1.06)
+                    (org-level-2 . 1.05)
+                    (org-level-3 . 1.03)
                     (org-level-4 . 1.0)
-                    (org-level-5 . 1.1)
-                    (org-level-6 . 1.1)
-                    (org-level-7 . 1.1)
-                    (org-level-8 . 1.1)))
-      (set-face-attribute (car face) nil :font "JetBrains Mono" :weight 'regular :height (cdr face))))
+                    (org-level-5 . 1.0)
+                    (org-level-6 . 1.0)
+                    (org-level-7 . 1.0)
+                    (org-level-8 . 1.0)))
+      (set-face-attribute (car face) nil :font "Iosevka" :weight 'regular :height (cdr face))))
 #+end_src
 
 ** Basic Config
@@ -725,18 +662,20 @@ I prefer to use Vi-like editing command, so I use the [[https://evil.readthedocs
       :keymaps '(global override)
       :prefix "SPC")
 
-    (leader "<SPC>" 'counsel-M-x
-      "bb" 'counsel-switch-buffer
+    (leader "<SPC>" 'execute-extended-command
+      "bb" 'consult-buffer
       "b>" 'next-buffer
       "b<" 'previous-buffer
       "br" 'revert-buffer-quick
-      "ff" 'counsel-find-file
+      "ff" 'find-file
       "df" 'describe-function
       "dv" 'describe-variable
       "dk" 'describe-key
       "dd" 'dired-jump
       "gg" 'magit
       "oe" 'org-export-dispatch
+      "ss" 'consult-find
+      "mm" 'consult-man
       "/"  'evilnc-comment-or-uncomment-lines
       )
 
@@ -765,47 +704,65 @@ I prefer to use Vi-like editing command, so I use the [[https://evil.readthedocs
 #+end_src
 
 
-* Ivy and Counsel
-
-[[https://oremacs.com/swiper/][Ivy]] is an excellent completion framework for Emacs. It provides a minimal yet powerful selection menu that appears when you open files, switch buffers, and for many other tasks in Emacs. Counsel is a customized set of commands to replace `find-file` with `counsel-find-file`, etc which provide useful commands for each of the default completion commands.
-
-[[https://github.com/Yevgnen/ivy-rich][ivy-rich]] adds extra columns to a few of the Counsel commands to provide more information about each item.
+* Minibuffer and completion
 
 #+begin_src emacs-lisp
-  ;; ivy: generic completion machanism
-  ;; swiper: an ivy-enhanced alternative to isearch
-  (use-package ivy
-    :diminish
-    :bind (("C-s" . swiper)
-           :map ivy-minibuffer-map
-           ("TAB" . ivy-alt-done)
-           ("C-l" . ivy-alt-done)
-           ("C-j" . ivy-next-line)
-           ("C-k" . ivy-previous-line)
-           :map ivy-switch-buffer-map
-           ("C-k" . ivy-previous-line)
-           ("C-l" . ivy-done)
-           ("C-d" . ivy-switch-buffer-kill)
-           :map ivy-reverse-i-search-map
-           ("C-k" . ivy-previous-line)
-           ("C-d" . ivy-reverse-i-search-kill))
-    :config
-    (setq ivy-use-virtual-buffers t
-          ivy-count-format "(%d/%d) ")
+  ;; Vertico: better vertical completion for minibuffer commands
+  (setq enable-recursive-minibuffers t)                             ; Use the minibuffer whilst in the minibuffer
+  (setq completion-cycle-threshold 1)                               ; TAB cycles candidates
+  (setq completions-detailed t)                                     ; Show annotations
+  (setq tab-always-indent 'complete)                                ; When I hit TAB, try to complete, otherwise, indent
 
-    (ivy-mode 1))
-
-  ;; counsel: a collection of ivy-enhanced versions of common Emacs commands
-  (use-package counsel
-    :bind ( :map minibuffer-local-map
-            ("C-r" . 'counsel-minibuffer-history))
-    :config
-    (setq ivy-initial-inputs-alist nil))
-
-  ;; ivy-rich: give description on the command, make ivy better
-  (use-package ivy-rich
+  (fido-vertical-mode)                                              ; Show completion candidates in a vertical, interactive list
+  (setq completion-styles '(basic initials substring))              ; Different styles to match input to candidates
+  (define-key minibuffer-mode-map (kbd "TAB") 'minibuffer-complete) ; TAB acts more like how it does in the shell
+  
+  (use-package vertico
+    :ensure t
     :init
-    (ivy-rich-mode 1))
+    (fido-mode -1)
+    (vertico-mode))
+
+  ;; Marginalia: annotations for minibuffer
+  (use-package marginalia
+    :ensure t
+    :config
+    (marginalia-mode))
+
+  ;; Popup completion-at-point
+  (use-package corfu
+    :ensure t
+    :config
+    (global-corfu-mode))
+
+  ;; Make corfu popup come up in terminal overlay
+  (use-package corfu-terminal
+    :if (not (display-graphic-p))
+    :ensure t
+    :config
+    (corfu-terminal-mode))
+
+  ;; Pretty icons for corfu
+  (use-package kind-icon
+    :if (display-graphic-p)
+    :ensure t
+    :after corfu
+    :config
+    (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
+
+  ;; Consult: Misc. enhanced commands
+  (use-package consult
+    :ensure t
+    :bind (("C-x b" . consult-buffer) ;; orig. switch-to-buffer
+           ("M-y" . consult-yank-pop) ;; orig. yank-pop
+           ("C-s" . consult-line)     ;; orig. isearch
+           ))
+
+  ;; Orderless: powerful completion style
+  (use-package orderless
+    :ensure t
+    :config
+    (setq completion-styles '(orderless)))
 #+end_src
 
 * Magit
@@ -820,32 +777,6 @@ Magit is powerful.
     :init
     (setq forge-add-default-sections nil)
     (setq forge-add-default-bindings nil))
-#+end_src
-
-* Company Mode
-
-[[http://company-mode.github.io/][Company Mode]] provides a nicer in-buffer completion interface than completion-at-point which is more reminiscent of what you would expect from an IDE. I add a simple configuration to make the keybindings a little more useful (TAB now completes the selection and initiates completion at the current location if needed).
-
-#+begin_src emacs-lisp
-  (setq tab-always-indent 'complete)
-  (use-package company
-    :hook (after-init . global-company-mode)
-    :bind (:map company-active-map
-                ("<tab>" . company-complete-selection)
-                ("<return>" . company-complete-selection)
-                ("RET" . company-complete-selection))
-    :custom
-    (company-minimum-prefix-length 1)
-    (company-idle-delay 0.0)
-
-    :config
-    (use-package company-math
-      :config
-      ;; global activation of the unicode symbol completion 
-      (add-to-list 'company-backends 'company-math-symbols-unicode))
-    ;; (use-package company-box
-    ;;   :hook (company-mode . company-box-mode))
-    )
 #+end_src
 
 * Terminal
@@ -889,7 +820,6 @@ The downsides to Eshell are that it can be harder to configure than other packag
 - =C-c C-p= / =C-c C-n= - go back and forward in the buffer's prompts (also =[[= and =]]= with evil-mode)
 - =M-p= / =M-n= - go back and forward in the input history
 - =C-c C-u= - delete the current input string backwards up to the cursor
-- =counsel-esh-history= - A searchable history of commands typed into Eshell
 
 We will be covering Eshell more in future videos highlighting other things you can do with it.
 
@@ -906,7 +836,6 @@ For more thoughts on Eshell, check out these articles by Pierre Neidhardt:
     (add-to-list 'eshell-output-filter-functions 'eshell-truncate-buffer)
 
     ;; Bind some useful keys for evil-mode
-    (evil-define-key '(normal insert visual) eshell-mode-map (kbd "C-r") 'counsel-esh-history)
     (evil-define-key '(normal insert visual) eshell-mode-map (kbd "<home>") 'eshell-bol)
     (evil-normalize-keymaps)
 

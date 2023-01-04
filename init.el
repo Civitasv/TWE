@@ -11,7 +11,9 @@
       (eval-print-last-sexp)))
   (load bootstrap-file nil 'nomessage))
 
-(straight-use-package 'use-package)
+(if (<= emacs-major-version 28)
+    (straight-use-package 'use-package))
+
 (setq straight-use-package-by-default t)
 ;; Initialize package sources
 (require 'use-package)
@@ -25,15 +27,10 @@
   (auto-package-update-maybe)
   (auto-package-update-at-time "09:00"))
 
-;; no welcome messages
-(setq inhibit-startup-message t)
-(setq inhibit-splash-screen t)
-(setq initial-scratch-message nil)
-
 ;; stop creating backup~ files
-(setq make-backup-files nil)
+(setq make-backup-files t)
 ;; stop creating #autosave# files
-(setq auto-save-default nil)
+(setq auto-save-default t)
 
 (set-language-environment "UTF-8")
 (set-default-coding-systems 'utf-8)
@@ -47,22 +44,6 @@
                (visual-line-mode)
                (if visual-line-mode
                    (setq word-wrap nil)))))
-
-(if (not (display-graphic-p))
-    (progn
-      ;; 增大垃圾回收的阈值，提高整体性能（内存换效率）
-      (setq gc-cons-threshold (* 8192 8192 100))
-      (setq read-process-output-max (* 1024 1024 256)) ;; 128MB
-      ))
-
-(defun civ/display-startup-time ()
-  (message "Emacs loaded in %s with %d garbage collections."
-            (format "%.2f seconds"
-                    (float-time
-                      (time-subtract after-init-time before-init-time)))
-            gcs-done))
-
-(add-hook 'emacs-startup-hook #'civ/display-startup-time)
 
 (when (or (string-equal system-type "windows-nt") ; Microsoft Windows
           (string-equal system-type "gnu/linux"))
@@ -86,14 +67,11 @@
 
 ;; give a better doc
 (use-package helpful
-  :custom
-  (counsel-describe-function-function #'helpful-callable)
-  (counsel-describe-variable-function #'helpful-variable)
   :bind
-  ([remap describe-function] . counsel-describe-function)
+  ([remap describe-function] . helpful-function)
   ([remap describe-command] . helpful-command)
-  ([remap describe-symbol] . counsel-describe-symbol)
-  ([remap describe-variable] . counsel-describe-variable)
+  ([remap describe-symbol] . helpful-symbol)
+  ([remap describe-variable] . helpful-variable)
   ([remap describe-key] . helpful-key))
 
 (use-package evil-nerd-commenter)
@@ -104,15 +82,6 @@
   :config
   (openwith-mode t)
   (setq openwith-associations '(("\\.pdf\\'" "zathura" (file)))))
-
-;; Minimal UI
-(tool-bar-mode -1)	; Disable the toolbar
-(menu-bar-mode -1)	; Disable the menu bar
-
-(if (boundp 'fringe-mode)
-    (fringe-mode -1))
-(if (boundp 'scroll-bar-mode)
-    (scroll-bar-mode -1))
 
 (setq-default left-margin-width 1 right-margin-width 1)
 
@@ -127,19 +96,12 @@
                 eshell-mode-hook))
   (add-hook mode (lambda () (display-line-numbers-mode 0))))
 
-(pixel-scroll-mode)
+(pixel-scroll-precision-mode)
 
-;; (setq civ/chinese-font-size-scale-alist '((12 . 1.25) (12.5 . 1.25) (14 . 1.20) (16 . 1.25) (20 . 1.20)))
-(setq chinese-fonts-scale 1.20)
-(setq face-font-rescale-alist `(("Microsoft Yahei" . ,chinese-fonts-scale)
-                                ("Microsoft_Yahei" . ,chinese-fonts-scale)
-                                ("LXGW WenKai" . ,chinese-fonts-scale)
-                                ("WenQuanYi Zen Hei" . ,chinese-fonts-scale)))
-
-(let ((zh-font (font-spec :family "LXGW Wenkai")))
-  (set-face-attribute 'default nil :font "JetBrains Mono-13")
-  (set-face-attribute 'fixed-pitch nil :font "JetBrains Mono-13") ;; code block size
-  (set-face-attribute 'variable-pitch nil :font "JetBrains Mono-14")
+(let ((zh-font (font-spec :font "Sarasa Gothic-14")))
+  (set-face-attribute 'default nil :font "Iosevka-14")
+  (set-face-attribute 'fixed-pitch nil :font "Iosevka-14") ;; code block size
+  (set-face-attribute 'variable-pitch nil :font "Iosevka-14")
   (set-fontset-font t 'symbol (font-spec :family "FiraCode Nerd Font") nil 'append)
   (set-fontset-font t nil (font-spec :family "DejaVu Sans"))
 
@@ -294,15 +256,15 @@
                              (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
 
   ;; Set faces for heading levels
-  (dolist (face '((org-level-1 . 1.1)
-                  (org-level-2 . 1.06)
-                  (org-level-3 . 1.05)
+  (dolist (face '((org-level-1 . 1.06)
+                  (org-level-2 . 1.05)
+                  (org-level-3 . 1.03)
                   (org-level-4 . 1.0)
-                  (org-level-5 . 1.1)
-                  (org-level-6 . 1.1)
-                  (org-level-7 . 1.1)
-                  (org-level-8 . 1.1)))
-    (set-face-attribute (car face) nil :font "JetBrains Mono" :weight 'regular :height (cdr face))))
+                  (org-level-5 . 1.0)
+                  (org-level-6 . 1.0)
+                  (org-level-7 . 1.0)
+                  (org-level-8 . 1.0)))
+    (set-face-attribute (car face) nil :font "Iosevka" :weight 'regular :height (cdr face))))
 
 ;; org mode setting
 (defun civ/org-code-automatically-format ()
@@ -516,18 +478,20 @@
     :keymaps '(global override)
     :prefix "SPC")
 
-  (leader "<SPC>" 'counsel-M-x
-    "bb" 'counsel-switch-buffer
+  (leader "<SPC>" 'execute-extended-command
+    "bb" 'consult-buffer
     "b>" 'next-buffer
     "b<" 'previous-buffer
     "br" 'revert-buffer-quick
-    "ff" 'counsel-find-file
+    "ff" 'find-file
     "df" 'describe-function
     "dv" 'describe-variable
     "dk" 'describe-key
     "dd" 'dired-jump
     "gg" 'magit
     "oe" 'org-export-dispatch
+    "ss" 'consult-find
+    "mm" 'consult-man
     "/"  'evilnc-comment-or-uncomment-lines
     )
 
@@ -548,40 +512,62 @@
   :config
   (setq which-key-idle-delay 0.3))
 
-;; ivy: generic completion machanism
-;; swiper: an ivy-enhanced alternative to isearch
-(use-package ivy
-  :diminish
-  :bind (("C-s" . swiper)
-         :map ivy-minibuffer-map
-         ("TAB" . ivy-alt-done)
-         ("C-l" . ivy-alt-done)
-         ("C-j" . ivy-next-line)
-         ("C-k" . ivy-previous-line)
-         :map ivy-switch-buffer-map
-         ("C-k" . ivy-previous-line)
-         ("C-l" . ivy-done)
-         ("C-d" . ivy-switch-buffer-kill)
-         :map ivy-reverse-i-search-map
-         ("C-k" . ivy-previous-line)
-         ("C-d" . ivy-reverse-i-search-kill))
-  :config
-  (setq ivy-use-virtual-buffers t
-        ivy-count-format "(%d/%d) ")
+;; Vertico: better vertical completion for minibuffer commands
+(setq enable-recursive-minibuffers t)                             ; Use the minibuffer whilst in the minibuffer
+(setq completion-cycle-threshold 1)                               ; TAB cycles candidates
+(setq completions-detailed t)                                     ; Show annotations
+(setq tab-always-indent 'complete)                                ; When I hit TAB, try to complete, otherwise, indent
 
-  (ivy-mode 1))
+(fido-vertical-mode)                                              ; Show completion candidates in a vertical, interactive list
+(setq completion-styles '(basic initials substring))              ; Different styles to match input to candidates
+(define-key minibuffer-mode-map (kbd "TAB") 'minibuffer-complete) ; TAB acts more like how it does in the shell
 
-;; counsel: a collection of ivy-enhanced versions of common Emacs commands
-(use-package counsel
-  :bind ( :map minibuffer-local-map
-          ("C-r" . 'counsel-minibuffer-history))
-  :config
-  (setq ivy-initial-inputs-alist nil))
-
-;; ivy-rich: give description on the command, make ivy better
-(use-package ivy-rich
+(use-package vertico
+  :ensure t
   :init
-  (ivy-rich-mode 1))
+  (fido-mode -1)
+  (vertico-mode))
+
+;; Marginalia: annotations for minibuffer
+(use-package marginalia
+  :ensure t
+  :config
+  (marginalia-mode))
+
+;; Popup completion-at-point
+(use-package corfu
+  :ensure t
+  :config
+  (global-corfu-mode))
+
+;; Make corfu popup come up in terminal overlay
+(use-package corfu-terminal
+  :if (not (display-graphic-p))
+  :ensure t
+  :config
+  (corfu-terminal-mode))
+
+;; Pretty icons for corfu
+(use-package kind-icon
+  :if (display-graphic-p)
+  :ensure t
+  :after corfu
+  :config
+  (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
+
+;; Consult: Misc. enhanced commands
+(use-package consult
+  :ensure t
+  :bind (("C-x b" . consult-buffer) ;; orig. switch-to-buffer
+         ("M-y" . consult-yank-pop) ;; orig. yank-pop
+         ("C-s" . consult-line)     ;; orig. isearch
+         ))
+
+;; Orderless: powerful completion style
+(use-package orderless
+  :ensure t
+  :config
+  (setq completion-styles '(orderless)))
 
 (use-package magit)
 
@@ -590,26 +576,6 @@
   :init
   (setq forge-add-default-sections nil)
   (setq forge-add-default-bindings nil))
-
-(setq tab-always-indent 'complete)
-(use-package company
-  :hook (after-init . global-company-mode)
-  :bind (:map company-active-map
-              ("<tab>" . company-complete-selection)
-              ("<return>" . company-complete-selection)
-              ("RET" . company-complete-selection))
-  :custom
-  (company-minimum-prefix-length 1)
-  (company-idle-delay 0.0)
-
-  :config
-  (use-package company-math
-    :config
-    ;; global activation of the unicode symbol completion 
-    (add-to-list 'company-backends 'company-math-symbols-unicode))
-  ;; (use-package company-box
-  ;;   :hook (company-mode . company-box-mode))
-  )
 
 (when (string-equal system-type "gnu/linux")  ; Linux
   (use-package term
@@ -628,7 +594,6 @@
   (add-to-list 'eshell-output-filter-functions 'eshell-truncate-buffer)
 
   ;; Bind some useful keys for evil-mode
-  (evil-define-key '(normal insert visual) eshell-mode-map (kbd "C-r") 'counsel-esh-history)
   (evil-define-key '(normal insert visual) eshell-mode-map (kbd "<home>") 'eshell-bol)
   (evil-normalize-keymaps)
 
