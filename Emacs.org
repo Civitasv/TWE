@@ -652,6 +652,11 @@ I prefer to use Vi-like editing command, so I use the [[https://evil.readthedocs
       "C-j" 'evil-window-down
       "C-k" 'evil-window-up
       "C-l" 'evil-window-right
+      )
+
+    (general-def
+      :states 'insert
+      :keymaps '(global override)
       "C-SPC" 'completion-at-point
       )
 
@@ -742,7 +747,7 @@ Vertico(replace ivy), marginalia(replace ivy-rich), corfu(replace company), cons
     (corfu-preview-current t) ; Do not preview current candidate
     (corfu-preselect-first nil)
     (corfu-on-exact-match nil)      ; Don't auto expand tempel snippets
-  
+
     ;; Optionally use TAB for cycling, default is `corfu-complete'.
     :bind (:map corfu-map
                 ("TAB"     . corfu-next)
@@ -752,8 +757,8 @@ Vertico(replace ivy), marginalia(replace ivy-rich), corfu(replace company), cons
                 ("RET"     . corfu-insert))
     :init
     (global-corfu-mode)
-    :config
-    (setq tab-always-indent 'complete)
+    :config                              
+    (setq tab-always-indent nil)
     (setq enable-recursive-minibuffers t)                             ; Use the minibuffer whilst in the minibuffer
     (setq completion-cycle-threshold 1)                               ; TAB cycles candidates
     (setq completions-detailed t)                                     ; Show annotations
@@ -917,7 +922,6 @@ For more thoughts on Eshell, check out these articles by Pierre Neidhardt:
 #+end_src
 
 * File ManageMent
-
 ** Dired
 
 Dired is a built-in file manager for Emacs that does some pretty amazing things!  Here are some key bindings you should try out:

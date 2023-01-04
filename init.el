@@ -467,6 +467,11 @@
     "C-j" 'evil-window-down
     "C-k" 'evil-window-up
     "C-l" 'evil-window-right
+    )
+
+  (general-def
+    :states 'insert
+    :keymaps '(global override)
     "C-SPC" 'completion-at-point
     )
 
@@ -554,8 +559,8 @@
               ("RET"     . corfu-insert))
   :init
   (global-corfu-mode)
-  :config
-  (setq tab-always-indent 'complete)
+  :config                              
+  (setq tab-always-indent nil)
   (setq enable-recursive-minibuffers t)                             ; Use the minibuffer whilst in the minibuffer
   (setq completion-cycle-threshold 1)                               ; TAB cycles candidates
   (setq completions-detailed t)                                     ; Show annotations
