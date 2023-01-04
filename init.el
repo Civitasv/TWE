@@ -1,4 +1,5 @@
 (defvar bootstrap-version)
+
 (let ((bootstrap-file
        (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
       (bootstrap-version 6))
@@ -150,7 +151,7 @@
 ;; emacs air line
 (use-package doom-modeline
   :hook (after-init . doom-modeline-mode)
-  :custom ((doom-modeline-height 25)
+  :custom ((doom-modeline-height 35)
            (doom-modeline-indent-info t)))
 
 ;; highlight current line
@@ -280,7 +281,8 @@
   (visual-line-mode 1)
   (setq org-src-tab-acts-natively t)
   (define-key org-mode-map
-    (kbd "C-i") #'civ/org-code-automatically-format))
+              (kbd "M-i") #'civ/org-code-automatically-format)
+  (define-key org-mode-map (kbd "TAB") #'indent-for-tab-command))
 
 (defun civ/org-agenda-show-svg ()
   (let* ((case-fold-search nil)
@@ -325,7 +327,6 @@
   ;; Save Org buffers after refiling!
   (advice-add 'org-refile :after 'org-save-all-org-buffers)
 
-  (setq org-src-tab-acts-natively t)
   (civ/org-font-setup)
   (civ/org-babel-setup))
 
@@ -418,7 +419,7 @@
    evil-want-C-w-delete t  ; delete a word in insert state
    evil-want-C-u-scroll t  ; scroll up
    evil-want-C-d-scroll t  ; scroll down
-   evil-want-C-i-jump nil
+
    ;; Search
    evil-search-module 'isearch
    ;; Indentation
@@ -460,12 +461,13 @@
   :config
   (general-override-mode)
   (general-def
-    :states 'normal
+    :states '(normal insert)
     :keymaps '(global override)
     "C-h" 'evil-window-left
     "C-j" 'evil-window-down
     "C-k" 'evil-window-up
     "C-l" 'evil-window-right
+    "C-SPC" 'completion-at-point
     )
 
   (general-create-definer visual_leader
@@ -490,7 +492,8 @@
     "dd" 'dired-jump
     "gg" 'magit
     "oe" 'org-export-dispatch
-    "ss" 'consult-find
+    "sf" 'consult-find
+    "ss" 'consult-ripgrep
     "mm" 'consult-man
     "/"  'evilnc-comment-or-uncomment-lines
     )
@@ -512,62 +515,115 @@
   :config
   (setq which-key-idle-delay 0.3))
 
-;; Vertico: better vertical completion for minibuffer commands
-(setq enable-recursive-minibuffers t)                             ; Use the minibuffer whilst in the minibuffer
-(setq completion-cycle-threshold 1)                               ; TAB cycles candidates
-(setq completions-detailed t)                                     ; Show annotations
-(setq tab-always-indent 'complete)                                ; When I hit TAB, try to complete, otherwise, indent
-
 (fido-vertical-mode)                                              ; Show completion candidates in a vertical, interactive list
-(setq completion-styles '(basic initials substring))              ; Different styles to match input to candidates
 (define-key minibuffer-mode-map (kbd "TAB") 'minibuffer-complete) ; TAB acts more like how it does in the shell
 
+;; Vertico: better vertical completion for minibuffer commands, replace ivy
 (use-package vertico
-  :ensure t
+  :bind (:map vertico-map
+              ("C-j" . vertico-next)
+              ("C-k" . vertico-previous))
   :init
   (fido-mode -1)
   (vertico-mode))
 
-;; Marginalia: annotations for minibuffer
+;; Marginalia: annotations for minibuffer, replace ivy-rich
 (use-package marginalia
-  :ensure t
   :config
   (marginalia-mode))
 
-;; Popup completion-at-point
+;; Code Completion
 (use-package corfu
-  :ensure t
+  ;; Optional customizations
+  :custom
+  (corfu-cycle t)                 ; Allows cycling through candidates
+  (corfu-auto nil)                ; Disable auto completion
+  (corfu-auto-prefix 1)
+  ;; (corfu-auto-delay 0.0)
+  (corfu-echo-documentation 0.25) ; Enable documentation for completions
+  (corfu-preview-current t) ; Do not preview current candidate
+  (corfu-preselect-first nil)
+  (corfu-on-exact-match nil)      ; Don't auto expand tempel snippets
+
+  ;; Optionally use TAB for cycling, default is `corfu-complete'.
+  :bind (:map corfu-map
+              ("TAB"     . corfu-next)
+              ([tab]     . corfu-next)
+              ("S-TAB"   . corfu-previous)
+              ([backtab] . corfu-previous)
+              ("RET"     . corfu-insert))
+  :init
+  (global-corfu-mode)
   :config
-  (global-corfu-mode))
+  (setq tab-always-indent 'complete)
+  (setq enable-recursive-minibuffers t)                             ; Use the minibuffer whilst in the minibuffer
+  (setq completion-cycle-threshold 1)                               ; TAB cycles candidates
+  (setq completions-detailed t)                                     ; Show annotations
+
+  (custom-set-faces
+   '(corfu-default ((t (:background "#f0f0f0" :foreground "black"))))
+   '(corfu-current ((t (:background "#c0efff" :foreground "black"))))
+   '(corfu-bar ((t (:background "#505050"))))
+   '(corfu-border ((t (:background "#d7d7d7"))))
+   '(corfu-border ((t (:background "#d7d7d7"))))
+   )
+
+  (add-hook 'eshell-mode-hook
+            (lambda () (setq-local corfu-quit-at-boundary t
+                                   corfu-quit-no-match t
+                                   corfu-auto nil)
+              (corfu-mode))))
+
+;; Add extensions
+(use-package cape
+  ;; Bind dedicated completion commands
+  ;; Alternative prefix keys: C-c p, M-p, M-+, ...
+  :bind (("C-c p p" . completion-at-point)) ;; capf
+  :init
+  ;; Add `completion-at-point-functions', used by `completion-at-point'.
+  (add-hook 'org-mode-hook
+            (lambda ()
+              (add-to-list 'completion-at-point-functions #'cape-dabbrev)
+              (add-to-list 'completion-at-point-functions #'cape-file)
+              (add-to-list 'completion-at-point-functions #'cape-keyword)
+              (add-to-list 'completion-at-point-functions #'cape-tex)
+              (add-to-list 'completion-at-point-functions #'cape-abbrev)
+              (add-to-list 'completion-at-point-functions #'cape-symbol)
+              ))
+  (add-hook 'eshell-mode-hook
+            (lambda () 
+              (add-to-list 'completion-at-point-functions #'cape-history)
+              )))
 
 ;; Make corfu popup come up in terminal overlay
 (use-package corfu-terminal
   :if (not (display-graphic-p))
-  :ensure t
   :config
   (corfu-terminal-mode))
 
 ;; Pretty icons for corfu
 (use-package kind-icon
   :if (display-graphic-p)
-  :ensure t
   :after corfu
   :config
   (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
 
-;; Consult: Misc. enhanced commands
+;; Consult: Misc. enhanced commands, replace counsel
 (use-package consult
-  :ensure t
-  :bind (("C-x b" . consult-buffer) ;; orig. switch-to-buffer
-         ("M-y" . consult-yank-pop) ;; orig. yank-pop
-         ("C-s" . consult-line)     ;; orig. isearch
-         ))
+  :bind (("C-s" . consult-line)     ;; orig. isearch
+         )
+  )
 
 ;; Orderless: powerful completion style
 (use-package orderless
-  :ensure t
   :config
-  (setq completion-styles '(orderless)))
+  (setq orderless-component-separator " +"
+        completion-ignore-case t
+        read-buffer-completion-ignore-case t
+        read-file-name-completion-ignore-case t
+        completion-styles '(orderless basic)
+        completion-category-defaults nil
+        completion-category-overrides '((file (styles . (partial-completion))))))
 
 (use-package magit)
 
