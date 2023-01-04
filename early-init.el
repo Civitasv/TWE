@@ -31,7 +31,6 @@
 (setq default-frame-alist '((fullscreen . maximized)
 			    (vertical-scroll-bars . nil)
 			    (horizontal-scroll-bars . nil)
-			    (ns-appearance . dark)
 			    (ns-transparent-titlebar . t)
 			    (alpha-background . 98)))
 

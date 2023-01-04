@@ -281,8 +281,7 @@
   (visual-line-mode 1)
   (setq org-src-tab-acts-natively t)
   (define-key org-mode-map
-              (kbd "M-i") #'civ/org-code-automatically-format)
-  (define-key org-mode-map (kbd "TAB") #'indent-for-tab-command))
+              (kbd "C-i") #'civ/org-code-automatically-format))
 
 (defun civ/org-agenda-show-svg ()
   (let* ((case-fold-search nil)
@@ -472,7 +471,7 @@
   (general-def
     :states 'insert
     :keymaps '(global override)
-    "C-SPC" 'completion-at-point
+    "M-/" 'completion-at-point
     )
 
   (general-create-definer visual_leader
@@ -497,6 +496,7 @@
     "dd" 'dired-jump
     "gg" 'magit
     "oe" 'org-export-dispatch
+    "oc" 'org-toggle-checkbox
     "sf" 'consult-find
     "ss" 'consult-ripgrep
     "mm" 'consult-man
@@ -579,7 +579,7 @@
                                    corfu-auto nil)
               (corfu-mode))))
 
-;; Add extensions
+;; Corfu: Add extensions
 (use-package cape
   ;; Bind dedicated completion commands
   ;; Alternative prefix keys: C-c p, M-p, M-+, ...
