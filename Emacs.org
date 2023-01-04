@@ -1,5 +1,6 @@
 #+TITLE: My Minimal Emacs Configuration for Writing
 #+AUTHOR: Civitasv
+# #+SETUPFILE: https://fniessen.github.io/org-html-themes/org/theme-readtheorg.setup
 #+OPTIONS: num:nil
 #+PROPERTY: header-args:emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
 
