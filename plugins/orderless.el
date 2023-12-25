@@ -1,4 +1,4 @@
-;; Orderless: powerful completion style
+;; This is to provide completion style, format the completion source
 (use-package orderless
   :config
   (setq orderless-component-separator " +"
