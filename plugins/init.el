@@ -13,4 +13,5 @@
 (cv/load "~/.emacs.d/plugins/marginalia.el")
 (cv/load "~/.emacs.d/plugins/consult.el")
 (cv/load "~/.emacs.d/plugins/orderless.el")
+(cv/load "~/.emacs.d/plugins/corfu.el")
 (cv/load "~/.emacs.d/plugins/magit.el")

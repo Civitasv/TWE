@@ -5,6 +5,8 @@
       url-proxy-services
       '(("http"  . "127.0.0.1:7890")
 	("https" . "127.0.0.1:7890"))
+      tab-always-indent 'complete
+      completion-cycle-threshold nil      ; Always show all candidates in popup menu
       )
 
 (column-number-mode t)
