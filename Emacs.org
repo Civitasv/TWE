@@ -14,7 +14,7 @@
 
 #+begin_src emacs-lisp
   (defvar bootstrap-version)
-  
+
   (let ((bootstrap-file
          (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
         (bootstrap-version 6))
@@ -89,16 +89,6 @@ You can also use =M-x auto-package-update-now= to update right now!
                      (setq word-wrap nil)))))
 #+end_src
 
-** Proxy settings
-
-#+begin_src emacs-lisp
-  (when (or (string-equal system-type "windows-nt") ; Microsoft Windows
-            (string-equal system-type "gnu/linux"))
-    (setq url-proxy-services
-          '(("http"  . "127.0.0.1:51837")
-            ("https" . "127.0.0.1:51837"))))
-#+end_src
-
 ** Make error visible only
 
 And, I find that the bell annoying.
@@ -156,16 +146,6 @@ Emacs’ built in commenting functionality comment-dwim (usually bound to M-;) d
 
 #+begin_src emacs-lisp
   (add-hook 'emacs-startup-hook (lambda () (electric-pair-mode t)))
-#+end_src
-** PDF with zathura
-
-Zathura is the way!
-
-#+begin_src emacs-lisp
-  (use-package openwith
-    :config
-    (openwith-mode t)
-    (setq openwith-associations '(("\\.pdf\\'" "zathura" (file)))))
 #+end_src
 
 * User interface
@@ -281,280 +261,6 @@ From http://baohaojun.github.io/perfect-emacs-chinese-font.html.
   (global-hl-line-mode 1)
 #+end_src
 
-** Emoji support for Emacs
-
-#+begin_src emacs-lisp
-  (use-package emojify
-    :hook (after-init . global-emojify-mode))
-#+end_src
-
-** SVG Tag Mode
-
-#+begin_src emacs-lisp
-  (use-package svg-tag-mode
-    :config
-    (defconst date-re "[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\}")
-    (defconst time-re "[0-9]\\{2\\}:[0-9]\\{2\\}")
-    (defconst day-re "[A-Za-z]\\{3\\}")
-    (defconst day-time-re (format "\\(%s\\)? ?\\(%s\\)?" day-re time-re))
-
-    (defun svg-progress-percent (value)
-      (svg-image (svg-lib-concat
-                  (svg-lib-progress-bar (/ (string-to-number value) 100.0)
-                                        nil :margin 0 :stroke 2 :radius 3 :padding 2 :width 11)
-                  (svg-lib-tag (concat value "%")
-                               nil :stroke 0 :margin 0)) :ascent 'center))
-
-    (defun svg-progress-count (value)
-      (let* ((seq (mapcar #'string-to-number (split-string value "/")))
-             (count (float (car seq)))
-             (total (float (cadr seq))))
-        (svg-image (svg-lib-concat
-                    (svg-lib-progress-bar (/ count total) nil
-                                          :margin 0 :stroke 2 :radius 3 :padding 2 :width 11)
-                    (svg-lib-tag value nil
-                                 :stroke 0 :margin 0)) :ascent 'center)))
-    (setq svg-tag-tags
-          `(
-            ;; Progress, format: [22%] [22/32]
-            ("\\(\\[[0-9]\\{1,3\\}%\\]\\)" . ((lambda (tag)
-                                                (svg-progress-percent (substring tag 1 -2)))))
-            ("\\(\\[[0-9]+/[0-9]+\\]\\)" . ((lambda (tag)
-                                              (svg-progress-count (substring tag 1 -1)))))
-            ;; Org tags, format: :PROPERTIES:
-            ("\\(:[A-Za-z0-9]+:\\)" . ((lambda (tag) (svg-tag-make tag))))
-            ("\\(:[A-Za-z0-9]+[ \-]:\\)" . ((lambda (tag) tag)))
-            ;; Task priority, format: [#Z]
-            ("\\[#[a-zA-Z]\\]" . ( (lambda (tag)
-                                  (svg-tag-make tag :face 'org-priority
-                                                :beg 2 :end -1 :margin 0))))
-            ;; TODO / DONE
-            ("TODO" . ((lambda (tag) (svg-tag-make "TODO" :face 'org-todo :inverse t :margin 0))))
-            ("DONE" . ((lambda (tag) (svg-tag-make "DONE" :face 'org-done :margin 0))))
-            ;; Citation of the form [cite:@Knuth:1984]
-            ("\\(\\[cite:@[A-Za-z]+:\\)" . ((lambda (tag)
-                                              (svg-tag-make tag
-                                                            :inverse t
-                                                            :beg 7 :end -1
-                                                            :crop-right t))))
-            ("\\[cite:@[A-Za-z]+:\\([0-9]+\\]\\)" . ((lambda (tag)
-                                                       (svg-tag-make tag
-                                                                     :end -1
-                                                                     :crop-left t))))
-
-            ;; Active date (with or without day name, with or without time),
-            ;; format: <2022-12-12>, <2022-12-12 12:21>
-            (,(format "\\(<%s>\\)" date-re) .
-             ((lambda (tag)
-                (svg-tag-make tag :beg 1 :end -1 :margin 0))))
-            (,(format "\\(<%s \\)%s>" date-re day-time-re) .
-             ((lambda (tag)
-                (svg-tag-make tag :beg 1 :inverse nil :crop-right t :margin 0))))
-            (,(format "<%s \\(%s>\\)" date-re day-time-re) .
-             ((lambda (tag)
-                (svg-tag-make tag :end -1 :inverse t :crop-left t :margin 0))))
-
-            ;; Inactive date  (with or without day name, with or without time)
-            ;; format: <2022-12-12>, [2022-12-12 12:21]
-            (,(format "\\(\\[%s\\]\\)" date-re) .
-             ((lambda (tag)
-                (svg-tag-make tag :beg 1 :end -1 :margin 0 :face 'org-date))))
-            (,(format "\\(\\[%s \\)%s\\]" date-re day-time-re) .
-             ((lambda (tag)
-                (svg-tag-make tag :beg 1 :inverse nil :crop-right t :margin 0 :face 'org-date))))
-            (,(format "\\[%s \\(%s\\]\\)" date-re day-time-re) .
-             ((lambda (tag)
-                (svg-tag-make tag :end -1 :inverse t :crop-left t :margin 0 :face 'org-date))))
-            ))
-
-    (dolist (mode '(org-mode-hook))
-      (add-hook mode (lambda () (svg-tag-mode 1))))
-    )
-#+end_src
-
-* Org Mode
-
-[[https://orgmode.org/][Org Mode]] is one of the best modes in Emacs, It can make life easier.
-
-** Org Babel
-
-Org Babel allows us to evaluate code blocks in org file.
-
-#+begin_src emacs-lisp
-  (defun civ/org-babel-setup ()
-    (org-babel-do-load-languages
-     'org-babel-load-languages
-     '((emacs-lisp .t)
-       (python .t)
-       (scheme .t)))
-
-    (setq org-confirm-babel-evaluate nil)
-    (setq org-babel-python-command "python"))
-#+end_src
-
-** Header
-
-#+begin_src emacs-lisp
-  (defun civ/org-font-setup ()
-    ;; Replace list hyphen with dot
-    (font-lock-add-keywords 'org-mode
-                            '(("^ *\\([-]\\) "
-                               (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
-
-    ;; Set faces for heading levels
-    (dolist (face '((org-level-1 . 1.06)
-                    (org-level-2 . 1.05)
-                    (org-level-3 . 1.03)
-                    (org-level-4 . 1.0)
-                    (org-level-5 . 1.0)
-                    (org-level-6 . 1.0)
-                    (org-level-7 . 1.0)
-                    (org-level-8 . 1.0)))
-      (set-face-attribute (car face) nil :font "Iosevka" :weight 'regular :height (cdr face))))
-#+end_src
-
-** Basic Config
-
-This section contains the basic configuration for org-mode plus the configuration for Org agendas and capture templates.
-
-#+begin_src emacs-lisp
-  ;; org mode setting
-  (defun civ/org-code-automatically-format ()
-    "org code format"
-    (interactive)
-    (when (org-in-src-block-p)
-      (org-edit-special)
-      (indent-region (point-min) (point-max))
-      (org-edit-src-exit)))
-
-  (defun civ/org-mode-setup ()
-    (org-indent-mode)
-    (visual-line-mode 1)
-    (setq org-src-tab-acts-natively t)
-    (define-key org-mode-map
-                (kbd "C-i") #'civ/org-code-automatically-format))
-
-  (defun civ/org-agenda-show-svg ()
-    (let* ((case-fold-search nil)
-           (keywords (mapcar #'svg-tag--build-keywords svg-tag--active-tags))
-           (keyword (car keywords)))
-      (while keyword
-        (save-excursion
-          (while (re-search-forward (nth 0 keyword) nil t)
-            (overlay-put (make-overlay
-                          (match-beginning 0) (match-end 0))
-                         'display  (nth 3 (eval (nth 2 keyword)))) ))
-        (pop keywords)
-        (setq keyword (car keywords)))))
-
-  (add-hook 'org-agenda-finalize-hook #'civ/org-agenda-show-svg)
-
-  ;; use org to organize your life
-  (use-package org
-    :hook (org-mode . civ/org-mode-setup)
-    :config
-
-    (setq org-agenda-start-with-log-mode t)
-    (setq org-log-done 'time)
-    (setq org-log-into-drawer t)
-
-    ;; add org-habit, which enables us to show in agenda the STYLE
-    ;; which value is habit
-    (require 'org-habit)
-    (add-to-list 'org-modules 'org-habit)
-    (setq org-habit-graph-column 60)
-
-    ;; add org-tempo, which enables us to add some typical language
-    ;; and its alias, to input the alias and <TAB>, we can generate
-    ;; the code block quickly
-    (require 'org-tempo)
-    (add-to-list 'org-structure-template-alist '("sh" . "src shell"))
-    (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
-    (add-to-list 'org-structure-template-alist '("js" . "src javascript"))
-    (add-to-list 'org-structure-template-alist '("py" . "src python"))
-    (add-to-list 'org-structure-template-alist '("scm" . "src scheme"))
-
-    ;; Save Org buffers after refiling!
-    (advice-add 'org-refile :after 'org-save-all-org-buffers)
-
-    (civ/org-font-setup)
-    (civ/org-babel-setup))
-#+end_src
-
-** Org Modern UI
-
-#+begin_src emacs-lisp
-  (use-package org-modern
-    :after org
-    :config
-    (setq ;; Edit settings
-     org-auto-align-tags nil
-     org-tags-column 0
-     org-fold-catch-invisible-edits 'show-and-error
-     org-special-ctrl-a/e t
-     org-insert-heading-respect-content t
-
-     ;; Org styling, hide markup etc.
-     org-hide-emphasis-markers nil
-     org-pretty-entities nil
-     org-ellipsis "  "
-
-     ;; Agenda styling
-     org-agenda-tags-column 0
-     org-agenda-block-separator ?─
-     org-agenda-time-grid
-     '((daily today require-timed)
-       (800 1000 1200 1400 1600 1800 2000)
-       " ┄┄┄┄┄ " "┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄")
-     org-agenda-current-time-string
-     "⭠ now ─────────────────────────────────────────────────")
-    (global-org-modern-mode)
-    )
-#+end_src
-
-** Center Org Buffers
-
-#+begin_src emacs-lisp
-  (defun civ/org-mode-visual-fill ()
-    (setq visual-fill-column-width 100
-          visual-fill-column-center-text t)
-    (visual-fill-column-mode 1))
-
-  (use-package visual-fill-column
-    :hook (org-mode . civ/org-mode-visual-fill))
-#+end_src
-
-** Auto-tangle Configuration Files
-
-I don't want execute =org-babel-tangle= every time to make the configuration file change, so I make it automate.
-
-#+begin_src emacs-lisp
-  ;; Automatically tangle our Emacs.org config file when we save it
-  (defun efs/org-babel-tangle-config ()
-    (when (string-equal (buffer-file-name)
-                        (expand-file-name "~/.emacs.d/Emacs.org"))
-      ;; Dynamic scoping to the rescue
-      (let ((org-confirm-babel-evaluate nil))
-        (org-babel-tangle))))
-
-  (add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'efs/org-babel-tangle-config)))
-#+end_src
-
-** Math Formulas
-
-Use =<SPC>lp= to preview math formulas.
-
-$$a^2=b$$
-
-#+begin_src emacs-lisp
-  (setq org-latex-create-formula-image-program 'dvipng)
-  (setq org-latex-listings 'minted)
-  (require 'ox-latex)
-  (add-to-list 'org-latex-packages-alist '("" "minted"))
-  (add-to-list 'org-latex-packages-alist '("" "listings"))
-  (add-to-list 'org-latex-packages-alist '("" "color"))
-  (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.8))
-#+end_src
 
 * Keybindings
 
@@ -834,7 +540,7 @@ For more thoughts on Eshell, check out these articles by Pierre Neidhardt:
       (setq eshell-visual-commands '("htop" "zsh" "vim")))
 
     (eshell-git-prompt-use-theme 'simple))
-#+end_src
+#+end_sre
 
 * File ManageMent
 ** Dired
