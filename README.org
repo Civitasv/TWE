@@ -1,0 +1,36 @@
+* Emacs configuration
+
+This is my configuration for Emacs.
+
+#+BEGIN_SRC txt
+  .
+├── bootstrap.el                -- straight package manager
+├── early-init.el               -- early init config
+├── helper.el                   -- utility
+├── init.el                     -- entry of configuration
+├── options.el                  -- useful settings
+├── plugins
+│   ├── auto-package-update.el  -- package auto update
+│   ├── commenter.el            -- <SPC> / for comment
+│   ├── consult.el              -- backends for vertico
+│   ├── dashboard.el            -- dashboard
+│   ├── evil.el                 -- vim
+│   ├── general.el              -- keybinding
+│   ├── helpful.el              -- helpful docs
+│   ├── icons.el                -- beautiful icons
+│   ├── init.el                 -- entry of plugins
+│   ├── magit.el                -- Git client
+│   ├── marginalia.el           -- backends for vertico
+│   ├── modeline.el             -- modeline
+│   ├── no-littering.el         -- clear directory
+│   ├── orderless.el            -- format completion source
+│   ├── undo.el                 -- undo tree
+│   ├── vertico.el              -- frontend of completion
+│   └── which-key.el            -- which key
+#+END_SRC
+
+Notes:
+
+- corfu is not used, it is like vertico, just a frontend
+- cape is like consult, just a backend
+- cape-doc is like marginalia, just a backend
