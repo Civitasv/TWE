@@ -3,4 +3,4 @@
   :hook (after-init . doom-modeline-mode)
   :custom ((doom-modeline-height 35)
            (doom-modeline-indent-info t)
-	   (doom-modeline-hud nil)))
+	   (doom-modeline-hud t)))
