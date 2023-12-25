@@ -8,3 +8,5 @@
 /eln-cache
 /straight
 /history
+*.~undo-tree~
+*.el~
