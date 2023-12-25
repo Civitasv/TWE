@@ -7,6 +7,7 @@
 	("https" . "127.0.0.1:7890"))
       tab-always-indent 'complete
       completion-cycle-threshold nil      ; Always show all candidates in popup menu
+      warning-minimum-level :emergency
       )
 
 (column-number-mode t)
@@ -46,4 +47,4 @@
 ;; Make ESC quit prompts
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 
-(load-theme 'modus-operandi)
+(load-theme 'modus-vivendi)

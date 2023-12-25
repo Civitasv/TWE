@@ -4,6 +4,7 @@
   :custom
   (corfu-cycle t)           ;; Enable cycling for `corfu-next/previous'
   (corfu-preselect 'prompt) ;; Always preselect the prompt
+  (corfu-auto t)
 
   ;; Use TAB for cycling, default is `corfu-complete'.
   :bind
@@ -12,6 +13,5 @@
         ([tab] . corfu-next)
         ("S-TAB" . corfu-previous)
         ([backtab] . corfu-previous))
-
   :init
   (global-corfu-mode))
