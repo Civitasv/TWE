@@ -39,7 +39,7 @@
 ;; There are two ways to load a theme. Both assume the theme is installed and
 ;; available. You can either set `doom-theme' or manually load a theme with the
 ;; `load-theme' function. This is the default:
-(setq doom-theme 'doom-vibrant)
+(setq doom-theme 'gruber-darker)
 
 ;; This determines the style of line numbers in effect. If set to `nil', line
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
@@ -104,7 +104,15 @@
     )
   )
 
-(map! "C-j" #'evil-window-down
-      "C-k" #'evil-window-up
-      "C-h" #'evil-window-left
-      "C-l" #'evil-window-right)
+(map! :map (vterm-mode-map global-map)
+      :n "C-j" #'evil-window-down
+      :n "C-k" #'evil-window-up
+      :n "C-h" #'evil-window-left
+      :n "C-l" #'evil-window-right)
+
+;; typescript
+(setq auto-mode-alist (delete '("\\.tsx\\'" . typescript-tsx-mode) auto-mode-alist))
+(add-to-list 'auto-mode-alist '("\\.tsx\\'" . rjsx-mode))
+
+;; fix higher titlebar
+(add-hook 'doom-after-init-hook (lambda () (tool-bar-mode 1) (tool-bar-mode 0)))
