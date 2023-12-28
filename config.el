@@ -110,6 +110,10 @@
       :n "C-h" #'evil-window-left
       :n "C-l" #'evil-window-right)
 
+(map! :leader
+      :map lsp-mode-map
+      "lo" #'lsp-ui-doc--open-markdown-link)
+
 ;; typescript
 (setq auto-mode-alist (delete '("\\.tsx\\'" . typescript-tsx-mode) auto-mode-alist))
 (add-to-list 'auto-mode-alist '("\\.tsx\\'" . rjsx-mode))
