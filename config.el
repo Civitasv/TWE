@@ -39,7 +39,7 @@
 ;; There are two ways to load a theme. Both assume the theme is installed and
 ;; available. You can either set `doom-theme' or manually load a theme with the
 ;; `load-theme' function. This is the default:
-(setq doom-theme 'doom-material)
+(setq doom-theme 'doom-old-hope)
 
 ;; This determines the style of line numbers in effect. If set to `nil', line
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
@@ -98,21 +98,25 @@
 ;; You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
 ;; they are implemented.
 
-(after! (rust-mode lsp-mode)
+;; docs at right
+(after! (rust-mode lsp-mode c-mode c++-mode cpp-mode)
   (set-popup-rule!
     "^\\*lsp-\\(help\\|install\\)" :size 0.4 :vslot -4 :select nil :width 80 :side 'right
     )
   )
 
-(map! :map (vterm-mode-map global-map)
-      :n "C-j" #'evil-window-down
-      :n "C-k" #'evil-window-up
-      :n "C-h" #'evil-window-left
-      :n "C-l" #'evil-window-right)
+(map! :map general-override-mode-map
+      :gn "C-j" #'evil-window-down
+      :gn "C-k" #'evil-window-up
+      :gn "C-h" #'evil-window-left
+      :gn "C-l" #'evil-window-right)
 
 (map! :leader
       :map lsp-mode-map
-      "lo" #'lsp-ui-doc--open-markdown-link)
+      "lo" #'lsp-ui-doc--open-markdown-link ;; open link
+      :map (c-mode-map c++-mode-map)
+      "lf" #'lsp-format-buffer
+      )
 
 ;; typescript
 (setq auto-mode-alist (delete '("\\.tsx\\'" . typescript-tsx-mode) auto-mode-alist))
@@ -120,3 +124,15 @@
 
 ;; fix higher titlebar
 (add-hook 'doom-after-init-hook (lambda () (tool-bar-mode 1) (tool-bar-mode 0)))
+(add-hook 'server-after-make-frame-hook (lambda() () (tool-bar-mode 1) (tool-bar-mode 0)))
+
+;; company mode
+(use-package! company
+  :config
+  (setq company-idle-delay 0.2))
+
+(with-eval-after-load 'doom-themes
+  (doom-themes-treemacs-config)
+  (setq doom-themes-treemacs-theme "doom-colors"
+        doom-themes-treemacs-bitmap-indicator-width 1
+        doom-themes-treemacs-enable-variable-pitch t))
