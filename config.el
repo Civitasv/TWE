@@ -41,6 +41,13 @@
 ;; `load-theme' function. This is the default:
 (setq doom-theme 'doom-old-hope)
 
+;; Doom theme for treemacs
+(with-eval-after-load 'doom-themes
+  (doom-themes-treemacs-config)
+  (setq doom-themes-treemacs-theme "doom-colors"
+        doom-themes-treemacs-bitmap-indicator-width 1
+        doom-themes-treemacs-enable-variable-pitch t))
+
 ;; This determines the style of line numbers in effect. If set to `nil', line
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
 (setq display-line-numbers-type 'relative)
@@ -49,7 +56,7 @@
 ;; change `org-directory'. It must be set before org loads!
 (setq org-directory "~/org/")
 
-;; common settings
+;; Common settings
 (setq-default delete-by-moving-to-trash t                      ; Delete files to trash
               window-combination-resize t                      ; take new window space from all other windows (not just current)
               x-stretch-cursor t)                              ; Stretch cursor to the glyph width
@@ -61,7 +68,11 @@
       scroll-margin 5                             ; It's nice to maintain a little margin
       )
 
-;; doom-dashboard
+;; Fix higher titlebar
+(add-hook 'doom-after-init-hook (lambda () (tool-bar-mode 1) (tool-bar-mode 0)))
+(add-hook 'server-after-make-frame-hook (lambda() () (tool-bar-mode 1) (tool-bar-mode 0)))
+
+;; Doom dashboard
 (setq fancy-splash-image "~/Pictures/emacs.svg")
 (remove-hook '+doom-dashboard-functions #'doom-dashboard-widget-shortmenu)
 (remove-hook '+doom-dashboard-functions #'doom-dashboard-widget-footer)
@@ -98,19 +109,37 @@
 ;; You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
 ;; they are implemented.
 
-;; docs at right
+;; The docs panel should at right
 (after! (rust-mode lsp-mode c-mode c++-mode cpp-mode)
   (set-popup-rule!
     "^\\*lsp-\\(help\\|install\\)" :size 0.4 :vslot -4 :select nil :width 80 :side 'right
     )
   )
 
+;; Remember what you've typed
+(use-package keycast
+  :after doom-modeline
+  :commands keycast-mode
+  :config
+  (define-minor-mode keycast-mode
+    "Show current command and its key binding in the mode line."
+    :global t
+    (if keycast-mode
+        (progn
+          (add-hook 'pre-command-hook 'keycast--update t)
+          (add-to-list 'global-mode-string '("" keycast-mode-line " ")))
+      (remove-hook 'pre-command-hook 'keycast--update)
+      (setq global-mode-string (remove '("" keycast-mode-line " ") global-mode-string))))
+  (keycast-mode))
+
+;; C-j/k/h/l everywhere
 (map! :map general-override-mode-map
       :gn "C-j" #'evil-window-down
       :gn "C-k" #'evil-window-up
       :gn "C-h" #'evil-window-left
       :gn "C-l" #'evil-window-right)
 
+;; Custom keymapping
 (map! :leader
       :map lsp-mode-map
       "lo" #'lsp-ui-doc--open-markdown-link ;; open link
@@ -118,21 +147,11 @@
       "lf" #'lsp-format-buffer
       )
 
-;; typescript
+;; Typescript
 (setq auto-mode-alist (delete '("\\.tsx\\'" . typescript-tsx-mode) auto-mode-alist))
 (add-to-list 'auto-mode-alist '("\\.tsx\\'" . rjsx-mode))
 
-;; fix higher titlebar
-(add-hook 'doom-after-init-hook (lambda () (tool-bar-mode 1) (tool-bar-mode 0)))
-(add-hook 'server-after-make-frame-hook (lambda() () (tool-bar-mode 1) (tool-bar-mode 0)))
-
-;; company mode
+;; Company mode
 (use-package! company
   :config
   (setq company-idle-delay 0.2))
-
-(with-eval-after-load 'doom-themes
-  (doom-themes-treemacs-config)
-  (setq doom-themes-treemacs-theme "doom-colors"
-        doom-themes-treemacs-bitmap-indicator-width 1
-        doom-themes-treemacs-enable-variable-pitch t))
