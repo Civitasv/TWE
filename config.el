@@ -116,8 +116,8 @@
     )
   )
 
-;; Remember what you've typed
-(use-package keycast
+;; Remember what you've typed, you should call keycast-mode-line-mode yourself once
+(use-package! keycast
   :after doom-modeline
   :commands keycast-mode
   :config
@@ -130,6 +130,15 @@
           (add-to-list 'global-mode-string '("" keycast-mode-line " ")))
       (remove-hook 'pre-command-hook 'keycast--update)
       (setq global-mode-string (remove '("" keycast-mode-line " ") global-mode-string))))
+  (setq keycast-mode-line-format "%2s%k%c%R")
+  (setq keycast-mode-line-window-predicate 'mode-line-window-selected-p)
+  (setq keycast-mode-line-remove-tail-elements nil)
+
+  (dolist (input '(self-insert-command org-self-insert-command))
+    (add-to-list 'keycast-substitute-alist `(,input "." "Typing…")))
+
+  (dolist (event '(mouse-event-p mouse-movement-p mwheel-scroll mac-mwheel-scroll))
+    (add-to-list 'keycast-substitute-alist `(,event nil)))
   (keycast-mode))
 
 ;; C-j/k/h/l everywhere
