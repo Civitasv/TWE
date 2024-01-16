@@ -50,7 +50,7 @@
 ;; (unpin! t)
 
 ;; The theme
-(package! gruber-darker-theme)
+(package! modus-themes)
 
 ;; For Haskell
 (package! haskell-mode)

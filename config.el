@@ -39,7 +39,26 @@
 ;; There are two ways to load a theme. Both assume the theme is installed and
 ;; available. You can either set `doom-theme' or manually load a theme with the
 ;; `load-theme' function. This is the default:
-(setq doom-theme 'doom-old-hope)
+
+;; The modus themes
+(use-package! modus-themes
+  :config
+  ;; Add all your customizations prior to loading the themes
+  (setq modus-themes-italic-constructs t
+        modus-themes-bold-constructs t)
+
+  ;; Maybe define some palette overrides, such as by using our presets
+  (setq modus-vivendi-palette-overrides
+        '((cursor yellow-warmer)
+          (bg-mode-line-active bg-dim)
+          (border bg-mode-line-active)
+          (border-mode-line-active bg-mode-line-active)
+          (border-mode-line-inactive bg-mode-line-inactive)
+          (bg-line-number-inactive bg-main)
+          (bg-line-number-active bg-main)))
+
+  ;; Load the theme of your choice.
+  (load-theme 'modus-vivendi :no-confirm))
 
 ;; Doom theme for treemacs
 (with-eval-after-load 'doom-themes
@@ -64,8 +83,9 @@
 (setq undo-limit 80000000                         ; Raise undo-limit to 80Mb
       evil-want-fine-undo t                       ; By default while in insert all changes are one big blob. Be more granular
       auto-save-default t                         ; Nobody likes to loose work, I certainly don't
-      truncate-string-ellipsis "…"                ; Unicode ellispis are nicer than "...", and also save /precious/ space
+      truncate-string-ellipsis "…"               ; Unicode ellispis are nicer than "...", and also save /precious/ space
       scroll-margin 5                             ; It's nice to maintain a little margin
+      fringe-mode 'minimal                        ; Minimalize the fringe
       )
 
 ;; Fix higher titlebar
@@ -115,6 +135,15 @@
     "^\\*lsp-\\(help\\|install\\)" :size 0.4 :vslot -4 :select nil :width 80 :side 'right
     )
   )
+
+;; The modeline
+(use-package! doom-modeline
+  :config
+  (setq doom-modeline-height 20
+        doom-modeline-icon t
+        doom-modeline-indent-info t
+        doom-modeline-buffer-encoding t)
+  (add-hook 'org-mode-hook (setq-local doom-modeline-enable-word-count t)))
 
 ;; Remember what you've typed, you should call keycast-mode-line-mode yourself once
 (use-package! keycast
