@@ -48,7 +48,7 @@
         modus-themes-bold-constructs t)
 
   ;; Maybe define some palette overrides, such as by using our presets
-  (setq modus-vivendi-palette-overrides
+  (setq modus-themes-common-palette-overrides
         '((cursor yellow-warmer)
           (bg-mode-line-active bg-dim)
           (border bg-mode-line-active)
