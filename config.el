@@ -56,7 +56,8 @@
           (border-mode-line-inactive bg-mode-line-inactive)
           (bg-line-number-inactive bg-main)
           (bg-line-number-active bg-main)
-          (bg-term-black bg-term-white)))
+          (bg-term-black bg-term-white)
+          (fringe bg-main)))
 
   ;; Load the theme of your choice.
   (load-theme 'modus-vivendi :no-confirm))
