@@ -87,8 +87,9 @@
       auto-save-default t                         ; Nobody likes to loose work, I certainly don't
       truncate-string-ellipsis "…"               ; Unicode ellispis are nicer than "...", and also save /precious/ space
       scroll-margin 5                             ; It's nice to maintain a little margin
-      fringe-mode 'minimal                        ; Minimalize the fringe
       )
+
+(fringe-mode '(8 . 8)) ; Disable the ugly fringe
 
 ;; Fix higher titlebar
 (add-hook 'doom-after-init-hook (lambda () (tool-bar-mode 1) (tool-bar-mode 0)))
