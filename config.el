@@ -186,6 +186,8 @@
       "lo" #'lsp-ui-doc--open-markdown-link ;; open link
       :map (c-mode-map c++-mode-map)
       "lf" #'lsp-format-buffer
+      :map org-mode-map
+      "lp" #'org-latex-preview
       )
 
 ;; Typescript
